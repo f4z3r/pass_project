@@ -1,5 +1,6 @@
 # Souffle
 /souffle/
+bin/
 
 # OS X
 .DS_Store
