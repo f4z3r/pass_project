@@ -1,6 +1,7 @@
 # Souffle
 /souffle/
-bin/
+*.cpp
+*.csv
 
 # OS X
 .DS_Store
