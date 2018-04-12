@@ -59,14 +59,16 @@ The grammar for the language is formalised below. Note that `c` is an integer co
 ## Predicates
 The input code is encoded using the following Datalog predicates:
 
-- `source(l, x)`: assign output of `source()` to variable `x` at label `l`.
-- `sink(l, x)`: call `sink()` with `x` as argument at label `l`.
-- `follows(l2, l1)`: label `l2` follows label `l1`.
-- `if(l1, l2, cond)`: if condition `cond` at label `l1` holds then label `l2` follows label `l1`.
-- `join(l1, l2, l3)`: join labels `l2` and `l3` at `l1`.
-- `opv(l, x, y, z)`: apply `op()` to variables `y` and `z` and store the result in `x` at label `l`.
-- `opc(l, x, y, c)`: apply `op()` to variable `y` and constant `c` and store the result in `x` at label `l`.
-- `assign(l, x, y)`: assign the variable/constant `y` to `x` at label `l`.
+| __Predicate__ | __Meaning__ |
+|-|-|
+| `source(l, x)` | assign output of `source()` to variable `x` at label `l`.|
+| `sink(l, x)` | call `sink()` with `x` as argument at label `l`.|
+| `follows(l2, l1)` | label `l2` follows label `l1`.|
+| `if(l1, l2, cond)` | if condition `cond` at label `l1` holds then label `l2` follows label `l1`.|
+| `join(l1, l2, l3)` | join labels `l2` and `l3` at `l1`.|
+| `opv(l, x, y, z)` | apply `op()` to variables `y` and `z` and store the result in `x` at label `l`.|
+| `opc(l, x, y, c)` | apply `op()` to variable `y` and constant `c` and store the result in `x` at label `l`. |
+| `assign(l, x, y)` | assign the variable/constant `y` to `x` at label `l`.|
 
 ## Input/Output
 The input to the analysis is the encoding of the code using the predicates described [this](#predicates) section. The analysis should produce the list of locations and arguments at which the `sanitise()` method should be called. For example the output of `(l5, y)` and `(l2, z)` respectively will get full grades for the [two code examples](#examples).
