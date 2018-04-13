@@ -62,6 +62,8 @@ class Parser:
         """Parses the source code. Note this does not check for correctness. Hence incorrect
         source code can produce undefined behaviour.
         """
+        logger.info("Started parsing file: {}".format(self.filename))
+
         with open(self.filename, 'r') as file:
             self.text = file.read()
 
@@ -126,6 +128,8 @@ class Parser:
                 logger.warning("unknown: {}".format(token))
 
             token = self._parse_token()
+
+        logger.info("Finished parsing file: {}".format(self.filename))
 
 
         self._source_file.close()

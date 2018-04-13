@@ -57,17 +57,10 @@ def setup_parser():
 
 def setup_logger():
     """Set up the logger."""
-    file_path = os.path.dirname(os.path.abspath(__file__))
-
-    try:
-        os.mkdir(os.path.join(file_path, "../logs"))
-    except OSError:
-        pass
-
     logger = logging.getLogger("pass_project")
     logger.setLevel(logging.DEBUG)
     console = logging.StreamHandler()
-    logfile = logging.FileHandler(os.path.join(file_path, "../logs/taint_analysis.yaml"), 'a')
+    logfile = logging.FileHandler(os.path.join(properties["LOG_DIR"], "taint_analysis.yaml"), 'a')
     console_formatter = logging.Formatter("%(message)s")
     logfile_formatter = logging.Formatter("---\ntime: %(asctime)s\ntrace: %(name)s\n"
                                           "level: %(levelname)s\nmessage:\n  %(message)s")

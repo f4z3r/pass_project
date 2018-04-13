@@ -2,6 +2,8 @@
 
 if __name__ == "__main__":
     import os, sys
+    import subprocess
+    from datetime import datetime
 
     from assets.lib import utils
     from assets.lib.parser import Parser
@@ -15,7 +17,31 @@ if __name__ == "__main__":
         for source in properties["args"].source:
             parser = Parser(source)
             parser.parse()
-            # Run the taint_analysis
+            logger.info("Launching an analysis ...")
+            try:
+                process = subprocess.run(["souffle",
+                                          "--output-dir=" + properties["OUTPUT_DIR"],
+                                          "--fact-dir=" + properties["FACTS_DIR"],
+                                          properties["DL_FILE"],
+                                         ],
+                                         stdout=subprocess.PIPE,
+                                         stderr=subprocess.PIPE,
+                                         check=True)
+                logger.info("Analysis finished with code: {}".format(process.returncode))
+
+                if process.returncode == 0:
+                    filename = os.path.join(properties["OUTPUT_DIR"],
+                                            "{}.csv".format(datetime.now()))
+                    os.rename(os.path.join(properties["OUTPUT_DIR"], "res.csv"), filename)
+
+                    # Work with the output file
+
+                else:
+                    logger.error("Something unexpected happened during analysis, please try again.")
+
+            except subprocess.CalledProcessError as err:
+                logger.error("Could not perform: {}\n{}".format(err.cmd, err))
+
 
     if properties["args"].command == "compile":
         # Compile the .dl file.
