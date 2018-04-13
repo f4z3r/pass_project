@@ -24,16 +24,16 @@
 // Assign the variable/constant `y` to `x` at label `l`
 .decl assign(label: label, receiver: var, var: var)
 
-.decl assignc(label: label, receiver: var, const: const)
-
 
 // -- facts --
+.input source
+.input sink
+.input follows
 .input if
-source("l1", "x").
-follows("l2", "l1"). opv("l2", "y", "x", "z").
-follows("l3", "l2").
-follows("l4", "l3"). assignc("l4", "y", 5).
-follows("l5", "l4"). follows("l5", "l2"). join("l5", "l2", "l4"). sink("l5", "y").
+.input join
+.input opv
+.input opc
+.input assign
 
 // -- analysis --
 
@@ -73,7 +73,7 @@ expl_depend(L, X, Y) :- assign(L, X, Y).
 expl_depend(L, X, X) :- source(L, X).
 
 //
-expl_depend(L, X, Y) :- expl_depend(L1, X, Y), follows(L, L1), !assignc(L, X, _), !assignc(L, Y, _).
+expl_depend(L, X, Y) :- expl_depend(L1, X, Y), follows(L, L1), !assign(L, X, _), !assign(L, Y, _).
 
 // ========================================
 // IMPLICIT DEPENDENCE

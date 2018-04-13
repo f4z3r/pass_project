@@ -5,12 +5,20 @@ if __name__ == "__main__":
 
     from assets.lib import utils
     from assets.lib.parser import Parser
-
-    file_path = os.path.dirname(os.path.abspath(__file__))
+    from assets.lib.commons import *
 
     utils.setup_parser()
     utils.setup_logger()
     logger = utils.get_logger("taint_analysis")
 
-    parser = Parser("somefile.source")
+    if properties["args"].command == "run":
+        for source in properties["args"].source:
+            parser = Parser(source)
+            parser.parse()
+            # Run the taint_analysis
+
+    if properties["args"].command == "compile":
+        # Compile the .dl file.
+        pass
+
 
