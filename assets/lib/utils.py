@@ -22,11 +22,7 @@ def get_logger(name=None, root_name=properties["package_name"]):
         return logging.getLogger(root_name)
 
 def setup_parser():
-    """Sets up the command line argument parser.
-
-    Returns:
-        argparse.Namespace: the command line arguments.
-    """
+    """Sets up the command line argument parser."""
     parser = argparse.ArgumentParser(description="Control program to launch all actions related to"
                                                  " this project.")
 
@@ -57,11 +53,7 @@ def setup_parser():
 
 
 def setup_logger():
-    """Set up the logger.
-
-    Returns:
-        logging.Logger: A logger.
-    """
+    """Set up the logger."""
     file_path = os.path.dirname(os.path.abspath(__file__))
 
     try:
