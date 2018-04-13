@@ -4,7 +4,12 @@
 *.cpp
 *.csv
 
+# Logging
 /assets/logs/
+
+# Python
+*.pyc
+__pycache__/
 
 # OS X
 .DS_Store
