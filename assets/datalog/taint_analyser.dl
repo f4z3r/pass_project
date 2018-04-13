@@ -15,14 +15,6 @@
 .decl follows(after: label, before: label)
 // If condition `cond` at label `l1` holds then label `l2` follows label `l1`
 .decl if(label: label, jump: label, condition: cond)
-
-// If condition `x == 0` at label `l1` holds then label `l2` follows label `l1`
-.decl ife(label: label, jump: label, var: var)
-// If condition `x > 0` at label `l1` holds then label `l2` follows label `l1`
-.decl ifg(label: label, jump: label, var: var)
-// If condition `x >= 0` at label `l1` holds then label `l2` follows label `l1`
-.decl ifge(label: label, jump: label, var: var)
-
 // Join labels `l2` and `l3` at `l1`
 .decl join(label: label, join1: label, join2: label)
 // Apply `op()` to variables `y` and `z` and store the result in `x` at label `l`
@@ -36,9 +28,10 @@
 
 
 // -- facts --
+.input if
 source("l1", "x").
 follows("l2", "l1"). opv("l2", "y", "x", "z").
-follows("l3", "l2"). ifg("l3", "l4", "y").
+follows("l3", "l2").
 follows("l4", "l3"). assignc("l4", "y", 5).
 follows("l5", "l4"). follows("l5", "l2"). join("l5", "l2", "l4"). sink("l5", "y").
 

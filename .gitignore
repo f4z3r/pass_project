@@ -1,5 +1,6 @@
 # Souffle
 /souffle/
+/souffle_tests/
 *.cpp
 *.csv
 
