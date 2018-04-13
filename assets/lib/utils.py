@@ -6,8 +6,6 @@ import argparse
 
 from assets.lib.commons import *
 
-logger = logging.getLogger(properties["package_name"] + "." + __name__)
-
 def get_logger(name=None, root_name=properties["package_name"]):
     """Builds logger with correct name.
     Args:
@@ -33,6 +31,11 @@ def setup_parser():
     verbosity_group.add_argument("-q", "--quiet",
                                  help="provide next to no output unless an error occured",
                                  action="store_true")
+
+    parser.add_argument("-d", "--debug",
+                        help="provide debug information",
+                        action="store_true")
+
 
     subparsers = parser.add_subparsers(dest="command", help="Commands")
     parser_c = subparsers.add_parser("compile",
@@ -72,12 +75,15 @@ def setup_logger():
     console.setFormatter(console_formatter)
     logfile.setFormatter(logfile_formatter)
 
-    logfile.setLevel(logging.WARNING)
+    if properties["args"].debug:
+        logfile.setLevel(logging.DEBUG)
+    else:
+        logfile.setLevel(logging.WARNING)
 
-    if not properties["args"].quiet:
-        console.setLevel(logging.WARNING)
-    elif properties["args"].verbose:
+    if properties["args"].verbose:
         console.setLevel(logging.INFO)
+    elif not properties["args"].quiet:
+        console.setLevel(logging.WARNING)
     else:
         console.setLevel(logging.ERROR)
 

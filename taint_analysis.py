@@ -12,5 +12,5 @@ if __name__ == "__main__":
     utils.setup_logger()
     logger = utils.get_logger("taint_analysis")
 
-
+    parser = Parser("somefile.source")
 
