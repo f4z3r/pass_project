@@ -4,5 +4,7 @@
 *.cpp
 *.csv
 
+/assets/logs/
+
 # OS X
 .DS_Store
