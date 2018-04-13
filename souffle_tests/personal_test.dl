@@ -1,0 +1,11 @@
+.decl edge(a: symbol, b:symbol)
+
+// Input
+.input edge
+
+.decl path(a: symbol, b:symbol)
+
+path(X, Y) :- edge(X, Y).
+path(X, Y) :- edge(X, Z), path(Z, Y).
+
+.output path(IO=stdout)
