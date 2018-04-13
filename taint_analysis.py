@@ -12,15 +12,6 @@ def setup_parser():
     parser = argparse.ArgumentParser(description="Control program to launch all actions related to"
                                                  " this project.")
 
-    parts = parser.add_mutually_exclusive_group()
-    parts.add_argument("-p", "--parse",
-                       help="only parse the source code without analysing it",
-                       action="store_true")
-    parts.add_argument("-a", "--analyse",
-                       help="skip parsing and only perform analysis. This can only be performed if"
-                       " parsed data exists",
-                       action="store_true")
-
     verbosity_group = parser.add_mutually_exclusive_group()
     verbosity_group.add_argument("-v", "--verbose",
                                  help="provide verbose output",
@@ -29,16 +20,21 @@ def setup_parser():
                                  help="provide next to no output unless an error occured",
                                  action="store_true")
 
-    parser.add_argument("-d", "--dest", action="store",
-                        default=None,
-                        type=str,
-                        help="a filename where to store the results")
+    subparsers = parser.add_subparsers(dest="command", help="Commands")
+    parser_c = subparsers.add_parser("compile",
+                                     help="compile the datalog program")
 
-    parser.add_argument("source",
-                        help="a list of any number of source files",
-                        nargs="*")
+    parser_r = subparsers.add_parser("run",
+                                     help="run the datalog program")
+    parser_r.add_argument("-d", "--dest", action="store",
+                          default=None,
+                          type=str,
+                          help="a filename where to store the results")
+    parser_r.add_argument("source",
+                          help="a list of any number of source files",
+                          nargs="+")
 
-    args, unknown = parser.parse_known_args()
+    args = parser.parse_args()
 
     return args
 
@@ -49,12 +45,3 @@ if __name__ == "__main__":
 
     # Setup a logger to output the solution to destination (file, console).
 
-    if args.parse:
-        # Parse
-        pass
-    elif args.analyse:
-        # Analyse
-        pass
-    else:
-        # Do all
-        pass
