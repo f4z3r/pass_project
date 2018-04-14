@@ -3,6 +3,7 @@
 /souffle_tests/
 *.cpp
 *.csv
+*.facts
 
 # Logging
 /assets/logs/

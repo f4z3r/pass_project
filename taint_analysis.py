@@ -41,6 +41,7 @@ if __name__ == "__main__":
 
             except subprocess.CalledProcessError as err:
                 logger.error("Could not perform: {}\n{}".format(err.cmd, err))
+                logger.info("{}".format(err.stderr.decode("ascii")))
 
 
     if properties["args"].command == "compile":

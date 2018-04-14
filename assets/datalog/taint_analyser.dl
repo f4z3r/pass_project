@@ -51,7 +51,7 @@ after(L1, L2) :- after(L1, L3), follows(L3, L2).
 // `x` is tainted at label `l`
 .decl tainted(label: label, var: var)
 tainted(L, X) :- source(L, X).
-tainted(L, X) :- expl_depend(L, X, Y), tainted(L, Y).
+tainted(L, X) :- expl_depend(L, X, Y), tainted(L1, Y), after(L, L1).
 
 
 // ========================================
@@ -72,7 +72,7 @@ expl_depend(L, X, Y) :- opv(L, X, _, Y).
 expl_depend(L, X, Y) :- assign(L, X, Y).
 expl_depend(L, X, X) :- source(L, X).
 
-//
+// Dependence carries over as long as there is not another assignment to the variable
 expl_depend(L, X, Y) :- expl_depend(L1, X, Y), follows(L, L1), !assign(L, X, _), !assign(L, Y, _).
 
 // ========================================
@@ -85,8 +85,8 @@ expl_depend(L, X, Y) :- expl_depend(L1, X, Y), follows(L, L1), !assign(L, X, _),
 // ========================================
 // RESULT
 // ========================================
-.decl res(label: label, dependent: var, on: var)
-res(L, X, Y) :- expl_depend(L, X, Y), X!=Y.
+.decl res(label: label, var: var)
+res(L, X) :- tainted(L, X), sink(L, X).
 
 .output res
 

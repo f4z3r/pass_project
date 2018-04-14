@@ -1,0 +1,6 @@
+x := source();
+if(x > 0):
+    z := 0;
+else:
+    z := 1;
+sink(z);

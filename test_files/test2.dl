@@ -1,0 +1,6 @@
+source(l1, x)
+follows(l2, l1), if(l2, l3, x > 0)
+follows(l3, l2), assign(l3, z, 0)
+follows(l4, l1), if(l4, l5, x <= 0)
+follows(l5, l4), assign(l5, z, 1)
+follows(l6, l5), follows(l6, l3), join(l6, l3, l5), sink(l6, z)

@@ -1,0 +1,16 @@
+x:= source();
+y := source();
+v := 5;
+if(x > 0):
+    y := opv(x, z);
+    w := source();
+    v := 10;
+sink(x);
+sink(z);
+z = source();
+sink(w);
+sink(y);
+sink(z);
+sink(v);
+k = opc(x, 10);
+sink(k);
