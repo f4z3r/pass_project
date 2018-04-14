@@ -1,6 +1,66 @@
 # pass_project
 Program Analysis for System Security and Reliability project
 
+## Usage
+`taint_analysis.py` controls the execution. Its usage is the following:
+```
+usage: taint_analysis.py [-h] [-v | -q] [-d] {compile,run} ...
+
+Control program to launch all actions related to this project.
+
+positional arguments:
+  {compile,run}  Commands
+    compile      compile the datalog program
+    run          run the datalog program
+
+optional arguments:
+  -h, --help     show this help message and exit
+  -v, --verbose  provide verbose output
+  -q, --quiet    provide next to no output unless an error occured
+  -d, --debug    provide debug information
+```
+Note that debug information is provided as a YAML logfile under `assets/logs/` and is not printed to console.
+
+The `compile` command allows to compile the Datalog program into a binary executable for faster execution of larger inputs. Note that the compilation can take some time.
+
+The `run` command takes one source file (or several) and analyses it. This will use a binary executable if present, otherwise it will run the Datalog program in an interpreter. Its precise usage is the following:
+```
+usage: taint_analysis.py run [-h] [-d DEST] source [source ...]
+
+positional arguments:
+  source                a list of any number of source files
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d DEST, --dest DEST  a filename where to store the results
+```
+
+If the `-d` option is given, the results are printed to the given filename instead of the console. Moreover, note that verbosity options should be provided before the `run` command.
+
+### Note
+In order to run the interpreter or to compile the Datalog program, [`souffle`](https://github.com/oracle/souffle/wiki) should be in `PATH`. If a binary is already present, this is not necessary.
+
+## Implementation
+The functionalities of the application work as follows:
+
+1. The input source file is parsed for Datalog tokens for the language defined [here](#predicates). Note that this is not a thorough parse at it will not look for errors in the input file but simply skip over invalid input.
+2. The parsed tokens from step one are formatted as tab separated values in several `.facts` input files for the main Datalog program. These files can be found under `assets/datalog/` but should not be manually modified as this can result in errors in the main analysis.
+3. The main Datalog analysis program is then called (either as a native binary or as the interpreter, depending on compilation) and analyses the input given in the `.facts` files based on the rules defined in the program (`assets/datalog/taint_analyser.dl`). The output of this is printed to output files in `assets/output`.
+4. The output from step three is read by python in order to beautify the output. If a destination file is provided to `run`, this will be printed to the file instead of the console.
+
+## Datalog TODO List
+1. Check for implicit dependencies.
+2. Find a way to learn the variables used in the `if` conditions for implicit dependencies.
+3. Find technique in method sanitation for implicit and explicit dependencies.
+    - Different strategies might need to be adopted for implicit and explicit dependencies.
+    - Explicit dependencies seem best handled immediately before `sink()`. However, if sanitised, check that dependent variables are implicitly sanitised and don't require their own sanitation.
+    - Implicit dependencies seem best handled immediately after sourcing. However note that this might create problems for other variables that explicitly depend on this input as they are not sanitised.
+4. Check for handling of more complex conditions with entire operations in the condition.
+
+
+---
+
+# Project Description
 ## Objective
 [Taint analysis](https://en.wikipedia.org/wiki/Taint_checking) consists in determining which parts of a program are dependent on the user inputs. The goal of this project is to implement a Datalog based taint analysis for a simple language.
 
