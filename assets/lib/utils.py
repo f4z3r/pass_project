@@ -43,6 +43,8 @@ def setup_parser():
 
     parser_r = subparsers.add_parser("run",
                                      help="run the datalog program")
+    parser_r.add_argument("-f", "--force", action="store_true",
+                          help="forces to use the interpreter even if a binary exists")
     parser_r.add_argument("-d", "--dest", action="store",
                           default=None,
                           type=str,
@@ -63,7 +65,7 @@ def setup_logger():
     logfile = logging.FileHandler(os.path.join(properties["LOG_DIR"], "taint_analysis.yaml"), 'a')
     console_formatter = logging.Formatter("%(message)s")
     logfile_formatter = logging.Formatter("---\ntime: %(asctime)s\ntrace: %(name)s\n"
-                                          "level: %(levelname)s\nmessage: |\n  %(message)s")
+                                          "level: %(levelname)s\nmessage:\n  \"%(message)s\"")
 
     console.setFormatter(console_formatter)
     logfile.setFormatter(logfile_formatter)

@@ -25,13 +25,14 @@ The `compile` command allows to compile the Datalog program into a binary execut
 
 The `run` command takes one source file (or several) and analyses it. This will use a binary executable if present, otherwise it will run the Datalog program in an interpreter. Its precise usage is the following:
 ```
-usage: taint_analysis.py run [-h] [-d DEST] source [source ...]
+usage: taint_analysis.py run [-h] [-f] [-d DEST] source [source ...]
 
 positional arguments:
   source                a list of any number of source files
 
 optional arguments:
   -h, --help            show this help message and exit
+  -f, --force           forces to use the interpreter even if a binary exists
   -d DEST, --dest DEST  a filename where to store the results
 ```
 
