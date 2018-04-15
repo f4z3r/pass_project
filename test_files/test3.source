@@ -14,3 +14,6 @@ sink(z);
 sink(v);
 k = opc(x, 10);
 sink(k);
+sink(x);
+x = opc(x, 5);
+sink(x);

@@ -14,3 +14,7 @@ follows(l13, l12) sink(l13, z)
 follows(l14, l13) sink(l14, v)
 follows(l15, l14) opc(l15, k, x, 10)
 follows(l16, l15) sink(l16, k)
+follows(l17, l16) sink(l17, x)
+follows(l18, l17) opc(l18, x, x, 5)
+follows(l19, l18) sink(l19, x)
+
