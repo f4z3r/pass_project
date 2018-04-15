@@ -24,13 +24,17 @@ class Analysis:
         """
         self.filename = filename
         self.output_file = None
-        self.use_bin = False
+        self.command = ["souffle",
+                        "--output-dir=" + properties["OUTPUT_DIR"],
+                        "--fact-dir=" + properties["FACTS_DIR"],
+                        properties["DL_FILE"],
+                       ]
 
         # check if compiled code exists
         if properties["args"].force:
             logger.info("Using interpreter.")
         elif "taint_analyser" in os.listdir(properties["BIN_DIR"]):
-            self.use_bin = True
+            self.command = [os.path.join(properties["BIN_DIR"], "taint_analyser")]
             logger.info("Binary found.")
         else:
             logger.warning("No binary found, using interpreter.")
@@ -44,25 +48,13 @@ class Analysis:
 
         logger.info("Launching the analysis ...")
         try:
-            process = None
-            if self.use_bin:
-                process = subprocess.run([os.path.join(properties["BIN_DIR"], "taint_analyser")],
-                                         stdout=subprocess.PIPE,
-                                         stderr=subprocess.PIPE,
-                                         check=True)
-                logger.info("Analysis finished with code: {}".format(process.returncode))
-            else:
-                process = subprocess.run(["souffle",
-                                          "--output-dir=" + properties["OUTPUT_DIR"],
-                                          "--fact-dir=" + properties["FACTS_DIR"],
-                                          properties["DL_FILE"],
-                                         ],
-                                         stdout=subprocess.PIPE,
-                                         stderr=subprocess.PIPE,
-                                         check=True)
-                logger.info("Analysis finished with code: {}".format(process.returncode))
+            process = subprocess.run(self.command,
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE,
+                                     check=True)
+            logger.info("Analysis finished with code: {}".format(process.returncode))
 
-            if process is not None and process.returncode == 0:
+            if process.returncode == 0:
                 self.output_file = os.path.join(properties["OUTPUT_DIR"],
                                                 "{}.csv".format(datetime.now()))
                 os.rename(os.path.join(properties["OUTPUT_DIR"], "res.csv"), self.output_file)
@@ -74,6 +66,5 @@ class Analysis:
             logger.error("An error occured:\n  {}".format(err))
             logger.info("Error returned:\n  {}".format(err.stderr.decode("ascii")))
             return
-
 
         # Work with file
