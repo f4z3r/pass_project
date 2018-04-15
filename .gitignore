@@ -4,6 +4,7 @@
 *.cpp
 *.csv
 *.facts
+bin/
 
 # Logging
 /assets/logs/

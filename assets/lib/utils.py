@@ -63,7 +63,7 @@ def setup_logger():
     logfile = logging.FileHandler(os.path.join(properties["LOG_DIR"], "taint_analysis.yaml"), 'a')
     console_formatter = logging.Formatter("%(message)s")
     logfile_formatter = logging.Formatter("---\ntime: %(asctime)s\ntrace: %(name)s\n"
-                                          "level: %(levelname)s\nmessage:\n  %(message)s")
+                                          "level: %(levelname)s\nmessage: |\n  %(message)s")
 
     console.setFormatter(console_formatter)
     logfile.setFormatter(logfile_formatter)
