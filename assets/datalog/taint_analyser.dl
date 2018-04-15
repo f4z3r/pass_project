@@ -40,18 +40,36 @@
 // ========================================
 // PROGRAM FLOW
 // ========================================
-// `l1` occurs after `l2` in the control flow.
+// `after` occurs after `before` in the control flow.
 .decl after(after: label, before: label)
 after(L1, L2) :- follows(L1, L2).
 after(L1, L2) :- after(L1, L3), follows(L3, L2).
+
+// variable `var` changed at label `label`.
+.decl changed(label: label, var: var)
+changed(L, X) :- assign(L, X, _).
+changed(L, X) :- opv(L, X, _, _).
+changed(L, X) :- opc(L, X, _, _).
+
+// variable `var` changed between labels `label1` and `label2`.
+.decl changed_btw(var: var, label1: label, label2: label)
+changed_btw(X, L1, L2) :- changed(L3, X), after(L3, L1), after(L2, L3).
 
 // ========================================
 // TAINTED VARIABLES
 // ========================================
 // `x` is tainted at label `l`
 .decl tainted(label: label, var: var)
-tainted(L, X) :- source(L, X).
-tainted(L, X) :- expl_depend(L, X, Y), tainted(L1, Y), after(L, L1).
+// tainted(L, X) :- source(L, X).
+// tainted(L, X) :- expl_depend(L, X, Y), tainted(L1, Y), after(L, L1).
+
+// variable `var` is flagged for sanitation due to sink at label `label`.
+.decl flagged(label: label, var: var)
+flagged(L, X) :- sink(L, X), source(K, Y), after(L, K), expl_depend(L, X, Y).
+
+// variable `var` was already flagged and did not change up to label `label`.
+.decl was_flagged(label: label, var:var)
+was_flagged(L, X) :- flagged(K, X), after(L, K), !changed_btw(X, K, L).
 
 
 // ========================================
@@ -72,8 +90,8 @@ expl_depend(L, X, Y) :- opv(L, X, _, Y).
 expl_depend(L, X, Y) :- assign(L, X, Y).
 expl_depend(L, X, X) :- source(L, X).
 
-// Dependence carries over as long as there is not another assignment to the variable
-expl_depend(L, X, Y) :- expl_depend(L1, X, Y), follows(L, L1), !assign(L, X, _), !assign(L, Y, _).
+// Dependence carries over as long as it does not change
+expl_depend(L, X, Y) :- expl_depend(L1, X, Y), follows(L, L1), !changed(L, X).
 
 // ========================================
 // IMPLICIT DEPENDENCE
@@ -86,7 +104,7 @@ expl_depend(L, X, Y) :- expl_depend(L1, X, Y), follows(L, L1), !assign(L, X, _),
 // RESULT
 // ========================================
 .decl res(label: label, var: var)
-res(L, X) :- tainted(L, X), sink(L, X).
+res(L, X) :- flagged(L, X), !was_flagged(L, X).
 
 .output res
 
