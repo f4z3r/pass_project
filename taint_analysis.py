@@ -14,8 +14,7 @@ if __name__ == "__main__":
 
     if properties["args"].command == "run":
         for source in properties["args"].source:
-            case = analysis.Analysis(source)
-            case.run()
+            analysis.Analysis(source).run()
 
 
 
