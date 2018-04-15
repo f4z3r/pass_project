@@ -48,6 +48,7 @@ after(L1, L2) :- after(L1, L3), follows(L3, L2).
 // variable `var` changed at label `label`.
 .decl changed(label: label, var: var)
 changed(L, X) :- assign(L, X, _).
+changed(L, X) :- source(L, X).
 changed(L, X) :- opv(L, X, _, _).
 changed(L, X) :- opc(L, X, _, _).
 
@@ -55,13 +56,24 @@ changed(L, X) :- opc(L, X, _, _).
 .decl changed_btw(var: var, label1: label, label2: label)
 changed_btw(X, L1, L2) :- changed(L3, X), after(L3, L1), after(L2, L3).
 
+// variable `var` was sourced between labels `label1` and `label2`.
+.decl sourced_btw(var: var, label1: label, label2: label)
+sourced_btw(X, L1, L2) :- source(L3, X), after(L3, L1), after(L2, L3).
+
+// at label `label`, `target` is where the last change to `var` occured.
+.decl last_chg(label: label, var: var, target: label)
+last_chg(L, X, T) :- changed(T, X), !changed_btw(X, T, L), after(L, T).
+
+// at label `label`, `target` is where the last source to `var` occured.
+.decl last_src(label: label, var: var, target: label)
+last_src(L, X, T) :- source(T, X), !sourced_btw(X, T, L), after(L, T).
+
 // ========================================
 // TAINTED VARIABLES
 // ========================================
 // `x` is tainted at label `l`
 .decl tainted(label: label, var: var)
-// tainted(L, X) :- source(L, X).
-// tainted(L, X) :- expl_depend(L, X, Y), tainted(L1, Y), after(L, L1).
+tainted(L, X) :- flagged(L, X), !was_flagged(L, X).
 
 // variable `var` is flagged for sanitation due to sink at label `label`.
 .decl flagged(label: label, var: var)
@@ -103,8 +115,8 @@ expl_depend(L, X, Y) :- expl_depend(L1, X, Y), follows(L, L1), !changed(L, X).
 // ========================================
 // RESULT
 // ========================================
-.decl res(label: label, var: var)
-res(L, X) :- flagged(L, X), !was_flagged(L, X).
+.decl res(label: label, var: var, target: label)
+res(L, X, T) :- tainted(L, X), last_chg(L, X, T).
 
 .output res
 
