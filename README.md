@@ -57,6 +57,9 @@ The functionalities of the application work as follows:
     - Explicit dependencies seem best handled immediately before `sink()`. However, if sanitised, check that dependent variables are implicitly sanitised and don't require their own sanitation.
     - Implicit dependencies seem best handled immediately after sourcing. However note that this might create problems for other variables that explicitly depend on this input as they are not sanitised.
 4. Check for handling of more complex conditions with entire operations in the condition.
+5. Figure out if you can have comparisons between several variables in a single `if` statement.
+6. Find out why implicit sanitation is required for code snippets similar to [the second example given](#examples).
+7. Is explicit sanitation required after performing a simple operation such as `x := op(x, 5)` on an already sanitised variable `x`?
 
 
 ---
