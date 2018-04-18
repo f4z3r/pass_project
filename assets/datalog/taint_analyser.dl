@@ -75,18 +75,17 @@ last_src(L, X, T) :- source(T, X), !sourced_btw(X, T, L), after(L, T).
 in_if(L, E, J) :- if(E, _, _, _), join(J, E, _), after(L, E), after(J, L).
 in_if(L, E, J) :- if(E, _, _, _), join(J, _, E), after(L, E), after(J, L).
 
-// `dependent` got dependent on `on` in if with entry at label `label`
-.decl changed_in_if(dependent: var, on: var, entry: label)
-changed_in_if(X, Y, E) :- assign(L, X, Y), in_if(L, E, _).
-changed_in_if(X, Y, E) :- opv(L, X, Y, _), in_if(L, E, _).
-changed_in_if(X, Y, E) :- opv(L, X, _, Y), in_if(L, E, _).
-changed_in_if(X, Y, E) :- opc(L, X, Y, _), in_if(L, E, _).
+// `var` was changed at label `label` in if with entry at label `label`
+.decl changed_in_if(var: var, label: label, entry: label)
+changed_in_if(X, L, E) :- assign(L, X, Y), in_if(L, E, _).
+changed_in_if(X, L, E) :- opv(L, X, Y, _), in_if(L, E, _).
+changed_in_if(X, L, E) :- opv(L, X, _, Y), in_if(L, E, _).
+changed_in_if(X, L, E) :- opc(L, X, Y, _), in_if(L, E, _).
 
 // `var` was used in condition of if at label `entry`
 .decl in_condition(var: var, entry: label)
 in_condition(X, E) :- if(E, _, X, _).
 in_condition(X, E) :- if(E, _, _, X).
-
 
 // ========================================
 // TAINTED VARIABLES
@@ -96,6 +95,7 @@ in_condition(X, E) :- if(E, _, _, X).
 tainted(L, X) :- source(L, X).
 tainted(L, X) :- tainted(L1, X), !changed_btw(X, L1, L), after(L, L1).
 tainted(L, X) :- expl_depend(L, X, Y), tainted(L, Y), !sanitised(L, Y).
+tainted(L, X) :- impl_depend(L, X, Y), tainted(L, Y), !sanitised(L, Y).
 
 .decl sanitised(label: label, var: var)
 sanitised(L, X) :- sink(L1, X), after(L, L1), !sourced_btw(X, L1, L).
@@ -122,6 +122,12 @@ expl_depend(L, X, Y) :- expl_depend(L1, X, Y), after(L, L1), !changed_btw(X, L1,
 // IMPLICIT DEPENDENCE
 // ========================================
 .decl impl_depend(label: label, dependent: var, on: var)
+impl_depend(L, X, Y) :- changed_in_if(X, L, E), in_condition(Y, E).
+// Transitivity
+impl_depend(L, X, Z) :- impl_depend(L, X, Y), impl_depend(L, Y, Z).
+// Dependence carries over as long as it does not change
+impl_depend(L, X, Y) :- impl_depend(L1, X, Y), after(L, L1), !changed_btw(X, L1, L).
+
 
 
 // ========================================
