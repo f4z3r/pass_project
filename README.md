@@ -13,7 +13,7 @@ positional arguments:
     compile           compile the datalog program
     run               run the datalog program
     test              test the datalog program, do not provide additional
-                      options
+                      options before. Regular unittest options can be added
 
 optional arguments:
   -h, --help          show this help message and exit

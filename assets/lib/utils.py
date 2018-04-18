@@ -55,9 +55,9 @@ def setup_parser():
 
     parser_t = subparsers.add_parser("test",
                                      help="test the datalog program, do not provide additional"
-                                          " options")
+                                          " options before. Regular unittest options can be added")
 
-    properties["args"] = parser.parse_args()
+    properties["args"], unknown = parser.parse_known_args()
 
 
 
