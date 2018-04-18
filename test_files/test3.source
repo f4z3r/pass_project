@@ -1,19 +1,27 @@
-x:= source();
+x := source();
 y := source();
 v := 5;
 if(x > 0):
     y := opv(x, z);
     w := source();
     v := 10;
-sink(x);
-sink(z);
-z = source();
-sink(w);
-sink(y);
-sink(z);
-sink(v);
-k = opc(x, 10);
-sink(k);
-sink(x);
-x = opc(x, 5);
-sink(x);
+sink(x);                // Sanitise see l1
+sink(z);                // No
+z := source();
+sink(w);                // Sanitise see l6
+sink(y);                // Sanitise see l2, l5
+sink(z);                // Sanitise see l10
+sink(v);                // Sanitise see l4 if l7 -- IMPLICIT
+k := opc(x, 10);
+sink(k);                // No sanitation, x sanitised see l8
+sink(x);                // No sanitation, x sanitised see l8
+x := opc(x, 5);
+sink(x);                // No sanitation, x sanitised see l8
+a := source();
+b := source();
+c := opv(a, b);
+a := 5;
+sink(c);                // Sanitise see l20, l21, l22
+sink(a);                // No sanitation needed
+x := source();
+sink(x);                // Sanitise see l26
