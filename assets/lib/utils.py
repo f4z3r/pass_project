@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 import os, sys
-import logging
+import logging, csv
 import argparse
 
 from assets.lib.commons import *
+
+logger = logging.getLogger(properties["package_name"] + "." + __name__)
 
 def get_logger(name=None, root_name=properties["package_name"]):
     """Builds logger with correct name.
@@ -88,3 +90,39 @@ def setup_logger():
 
     logger.addHandler(console)
     logger.addHandler(logfile)
+
+
+def read_csv(filename):
+    """Open a csv file with tab separated values and return them in a list.
+
+    Args:
+        filename (str, os.path.Path): the path to the desired csv file.
+
+    Returns:
+        list: A list of the rows contained in the csv file.
+    """
+    logger.debug("Reading file {}".format(filename))
+    result = None
+    with open(filename, "r", newline="") as file:
+        reader = csv.reader(file, delimiter="\t")
+        result = list(reader)
+    return result
+
+def print_csv(data, filename=None):
+    """Prints data from a list of records to the console or to a file.
+
+    Args:
+        data (list): the data to be printed
+        filename (os.path.Path): optional - the file to which to write the data
+    """
+    if filename is None:
+        print("\nRESULTS\nvar\tlocation")
+        for row in data:
+            print("\t".join(row))
+    else:
+        logger.debug("Writing results to file {}".format(filename))
+        with open(filename, "w") as file:
+            file.write("var\tlocation\n")
+            for row in data:
+                file.write("\t".join(row) + "\n")
+

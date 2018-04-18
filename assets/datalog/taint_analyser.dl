@@ -95,6 +95,7 @@ in_condition(X, E) :- if(E, _, _, X).
 tainted(L, X) :- source(L, X).
 tainted(L, X) :- tainted(L1, X), !changed_btw(X, L1, L), after(L, L1).
 tainted(L, X) :- expl_depend(L, X, Y), tainted(L, Y), !sanitised(L, Y).
+tainted(L, X) :- expl_depend(L, X, X), tainted(L1, X), follows(L, L1).
 tainted(L, X) :- impl_depend(L, X, Y), tainted(L, Y), !sanitised(L, Y).
 
 .decl sanitised(label: label, var: var)
@@ -137,5 +138,10 @@ impl_depend(L, X, Y) :- impl_depend(L1, X, Y), after(L, L1), !changed_btw(X, L1,
 res(X, L) :- sink(L, X), tainted(L, X), !sanitised(L, X).
 
 .output res
+
+// .decl test(var: var, label:label)
+// test(X, L) :- tainted(L, X), X = "x".
+
+// .output test
 
 

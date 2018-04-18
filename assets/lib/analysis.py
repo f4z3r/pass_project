@@ -67,5 +67,10 @@ class Analysis:
             logger.info("Error returned:\n  {}".format(err.stderr.decode("ascii")))
             return
 
-        # Work with file
+        if properties["test"]:
+            return self.output_file
+
+        data = utils.read_csv(self.output_file)
+        utils.print_csv(data, filename=properties["args"].dest)
+
         return self.output_file
