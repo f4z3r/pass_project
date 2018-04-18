@@ -55,6 +55,8 @@ changed(L, X) :- opc(L, X, _, _).
 // variable `var` changed between labels `label1` and `label2`.
 .decl changed_btw(var: var, label1: label, label2: label)
 changed_btw(X, L1, L2) :- changed(L3, X), after(L3, L1), after(L2, L3).
+changed_btw(X, L1, L2) :- changed(L2, X), after(L2, L1).
+
 
 // variable `var` was sourced between labels `label1` and `label2`.
 .decl sourced_btw(var: var, label1: label, label2: label)
@@ -68,12 +70,23 @@ last_chg(L, X, T) :- changed(T, X), !changed_btw(X, T, L), after(L, T).
 .decl last_src(label: label, var: var, target: label)
 last_src(L, X, T) :- source(T, X), !sourced_btw(X, T, L), after(L, T).
 
+// label `label` is in an if statement between label `entry` and label `join`
+.decl in_if(label: label, entry: label, join: label)
+in_if(L, E, J) :- if(E, _, _), join(J, E, _), after(L, E), after(J, L).
+in_if(L, E, J) :- if(E, _, _), join(J, _, E), after(L, E), after(J, L).
+
 // ========================================
 // TAINTED VARIABLES
 // ========================================
-// `x` is tainted at label `l`
+// `var` is tainted at label `l`
 .decl tainted(label: label, var: var)
-tainted(L, X) :- flagged(L, X), !was_flagged(L, X).
+// tainted(L, X) :- flagged(L, X), !was_flagged(L, X).
+tainted(L, X) :- source(L, X).
+tainted(L, X) :- tainted(L1, X), !changed_btw(X, L1, L), after(L, L1).
+tainted(L, X) :- expl_depend(L, X, Y), tainted(L, Y), !sanitised(L, Y).
+
+.decl sanitised(label: label, var: var)
+sanitised(L, X) :- sink(L1, X), after(L, L1), !sourced_btw(X, L1, L).
 
 // variable `var` is flagged for sanitation due to sink at label `label`.
 .decl flagged(label: label, var: var)
@@ -89,9 +102,6 @@ was_flagged(L, X) :- flagged(K, X), after(L, K), !changed_btw(X, K, L).
 // ========================================
 // `x` is explicitly dependent on `y`
 .decl expl_depend(label: label, dependent: var, on: var)
-// Reflexitivity
-expl_depend(L, X, X) :- expl_depend(L, X, _).
-expl_depend(L, X, X) :- expl_depend(L, _, X).
 // Transitivity
 expl_depend(L, X, Z) :- expl_depend(L, X, Y), expl_depend(L, Y, Z).
 // Explicit dependence on operations
@@ -100,24 +110,24 @@ expl_depend(L, X, Y) :- opv(L, X, Y, _).
 expl_depend(L, X, Y) :- opv(L, X, _, Y).
 // Explicit dependence on assignment
 expl_depend(L, X, Y) :- assign(L, X, Y).
-expl_depend(L, X, X) :- source(L, X).
 
 // Dependence carries over as long as it does not change
-expl_depend(L, X, Y) :- expl_depend(L1, X, Y), follows(L, L1), !changed(L, X).
+expl_depend(L, X, Y) :- expl_depend(L1, X, Y), after(L, L1), !changed_btw(X, L1, L).
 
 // ========================================
 // IMPLICIT DEPENDENCE
 // ========================================
 .decl impl_depend(label: label, dependent: var, on: var)
 
-
+// Find a way of finding variables used in `if` statements
 
 // ========================================
 // RESULT
 // ========================================
-.decl res(label: label, var: var, target: label)
-res(L, X, T) :- tainted(L, X), last_chg(L, X, T).
+.decl res(label: label, var: var)
+res(L, X) :- sink(L, X), tainted(L, X), !sanitised(L, X).
 
+.output in_if
 .output res
 
 
