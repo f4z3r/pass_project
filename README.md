@@ -87,6 +87,16 @@ The functionalities of the application work as follows:
          sink(z);
          sink(y);  // only sanitise x and y, not z
          ```
+      6. ```
+         x := source();
+         y := source();
+         z := op(x, y);
+         n := op(x, z);
+         sink(x);
+         sink(n);
+         sink(z);
+         sink(y);  // only sanitise x and y, not z and not n
+         ```
     - Implicit dependencies seem best handled immediately after sourcing. However note that this might create problems for other variables that explicitly depend on this input as they are not sanitised.
 2. Find out why implicit sanitation is required for code snippets similar to [the second example given](#examples).
 3. Is explicit sanitation required after performing a simple operation such as `x := op(x, 5)` on an already sanitised variable `x`?
