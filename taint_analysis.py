@@ -38,4 +38,7 @@ if __name__ == "__main__":
             logger.error("An error occured:\n  {}".format(err))
             logger.info("Error returned:\n  {}".format(err.stderr.decode("ascii")))
 
-
+    if properties["args"].command == "test":
+        import unittest
+        sys.argv[1:] = sys.argv[2:]
+        unittest.main(module="assets.lib.tests")

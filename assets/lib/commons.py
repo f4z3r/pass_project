@@ -14,6 +14,8 @@ properties = {
     "BIN_DIR": os.path.join(os.path.dirname(sys.modules["__main__"].__file__), "assets/bin"),
     "DL_FILE": os.path.join(os.path.dirname(sys.modules["__main__"].__file__),
                             "assets/datalog/taint_analyser.dl"),
+    "TEST_DIR": os.path.join(os.path.dirname(sys.modules["__main__"].__file__),
+                             "assets/test_cases"),
 }
 
 

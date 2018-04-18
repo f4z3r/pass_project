@@ -4,20 +4,21 @@ Program Analysis for System Security and Reliability project
 ## Usage
 `taint_analysis.py` controls the execution. Its usage is the following:
 ```
-usage: taint_analysis.py [-h] [-v | -q] [-d] {compile,run} ...
+usage: taint_analysis.py [-h] [-v | -q] [-d] {compile,run,test} ...
 
 Control program to launch all actions related to this project.
 
 positional arguments:
-  {compile,run}  Commands
-    compile      compile the datalog program
-    run          run the datalog program
+  {compile,run,test}  Commands
+    compile           compile the datalog program
+    run               run the datalog program
+    test              test the datalog program
 
 optional arguments:
-  -h, --help     show this help message and exit
-  -v, --verbose  provide verbose output
-  -q, --quiet    provide next to no output unless an error occured
-  -d, --debug    provide debug information
+  -h, --help          show this help message and exit
+  -v, --verbose       provide verbose output
+  -q, --quiet         provide next to no output unless an error occured
+  -d, --debug         provide debug information
 ```
 Note that debug information is provided as a YAML logfile under `assets/logs/` and is not printed to console.
 
@@ -159,7 +160,7 @@ The grammar for the language is formalised below. Note that `c` is an integer co
 <assignment>  -> x := <expression>
                | x := source()
 
-<sink>       -> sink(x)
+<sink>        -> sink(x)
 ```
 
 ## Predicates

@@ -53,6 +53,9 @@ def setup_parser():
                           help="a list of any number of source files",
                           nargs="+")
 
+    parser_t = subparsers.add_parser("test",
+                                     help="test the datalog program")
+
     properties["args"] = parser.parse_args()
 
 

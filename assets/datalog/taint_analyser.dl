@@ -3,7 +3,6 @@
 .type label
 .number_type const
 .type var
-.type cond
 
 // -- inputs --
 
@@ -61,6 +60,7 @@ changed_btw(X, L1, L2) :- changed(L2, X), after(L2, L1).
 // variable `var` was sourced between labels `label1` and `label2`.
 .decl sourced_btw(var: var, label1: label, label2: label)
 sourced_btw(X, L1, L2) :- source(L3, X), after(L3, L1), after(L2, L3).
+sourced_btw(X, L1, L2) :- source(L2, X), after(L2, L1).
 
 // at label `label`, `target` is where the last change to `var` occured.
 .decl last_chg(label: label, var: var, target: label)
