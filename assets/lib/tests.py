@@ -17,6 +17,22 @@ class TestDatalog(unittest.TestCase):
         outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_1.dl")).run()
         self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_1.csv"))
 
+    def test_case_2(self):
+        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_2.dl")).run()
+        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_2.csv"))
+
+    def test_case_3(self):
+        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_3.dl")).run()
+        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_3.csv"))
+
+    def test_case_4(self):
+        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_4.dl")).run()
+        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_4.csv"))
+
+    def test_case_5(self):
+        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_5.dl")).run()
+        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_5.csv"))
+
 
 
 

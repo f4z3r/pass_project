@@ -1,0 +1,4 @@
+x := source();
+sink(x);
+x := op(x, 5);
+sink(x);
