@@ -14,5 +14,7 @@ bin/
 *.pyc
 __pycache__/
 
+/test_files
+
 # OS X
 .DS_Store

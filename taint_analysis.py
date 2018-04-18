@@ -46,3 +46,14 @@ if __name__ == "__main__":
         import unittest
         sys.argv[1:] = sys.argv[2:]
         unittest.main(module="assets.lib.tests")
+
+
+    if properties["args"].command == "clear":
+        import shutil
+        logger.info("Clearing output folder ...")
+        shutil.rmtree(properties["OUTPUT_DIR"])
+        logger.info("Clearing log folder ...")
+        shutil.rmtree(properties["LOG_DIR"])
+        logger.info("Clearing binary folder ...")
+        shutil.rmtree(properties["BIN_DIR"])
+        logger.info("Done")
