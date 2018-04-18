@@ -31,7 +31,7 @@ class Analysis:
                        ]
 
         # check if compiled code exists
-        if properties["args"].force:
+        if properties["test"] is True or properties["args"].force:
             logger.info("Using interpreter.")
         elif "taint_analyser" in os.listdir(properties["BIN_DIR"]):
             self.command = [os.path.join(properties["BIN_DIR"], "taint_analyser")]
@@ -68,3 +68,4 @@ class Analysis:
             return
 
         # Work with file
+        return self.output_file

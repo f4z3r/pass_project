@@ -5,6 +5,7 @@
 *.csv
 *.facts
 bin/
+!/assets/test_cases/*.csv
 
 # Logging
 /assets/logs/

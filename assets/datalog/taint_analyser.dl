@@ -133,8 +133,8 @@ impl_depend(L, X, Y) :- impl_depend(L1, X, Y), after(L, L1), !changed_btw(X, L1,
 // ========================================
 // RESULT
 // ========================================
-.decl res(label: label, var: var)
-res(L, X) :- sink(L, X), tainted(L, X), !sanitised(L, X).
+.decl res(var: var, label: label)
+res(X, L) :- sink(L, X), tainted(L, X), !sanitised(L, X).
 
 .output res
 

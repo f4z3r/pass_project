@@ -3,6 +3,7 @@
 if __name__ == "__main__":
     import os, sys
     import subprocess
+    import logging
 
     from assets.lib import utils
     from assets.lib.commons import *
@@ -39,6 +40,9 @@ if __name__ == "__main__":
             logger.info("Error returned:\n  {}".format(err.stderr.decode("ascii")))
 
     if properties["args"].command == "test":
+        logger.info("Launching tests ...")
+        logger.setLevel(logging.WARNING)
+        properties["test"] = True
         import unittest
         sys.argv[1:] = sys.argv[2:]
         unittest.main(module="assets.lib.tests")

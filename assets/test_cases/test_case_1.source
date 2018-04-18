@@ -1,0 +1,4 @@
+x := source();
+y := source();
+sink(x);
+sink(y);
