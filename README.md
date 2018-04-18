@@ -12,7 +12,8 @@ positional arguments:
   {compile,run,test}  Commands
     compile           compile the datalog program
     run               run the datalog program
-    test              test the datalog program
+    test              test the datalog program, do not provide additional
+                      options
 
 optional arguments:
   -h, --help          show this help message and exit

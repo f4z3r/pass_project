@@ -54,7 +54,8 @@ def setup_parser():
                           nargs="+")
 
     parser_t = subparsers.add_parser("test",
-                                     help="test the datalog program")
+                                     help="test the datalog program, do not provide additional"
+                                          " options")
 
     properties["args"] = parser.parse_args()
 
