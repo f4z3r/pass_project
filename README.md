@@ -60,6 +60,8 @@ The functionalities of the application work as follows:
 5. Figure out if you can have comparisons between several variables in a single `if` statement.
 6. Find out why implicit sanitation is required for code snippets similar to [the second example given](#examples).
 7. Is explicit sanitation required after performing a simple operation such as `x := op(x, 5)` on an already sanitised variable `x`?
+8. Implement a predicate that finds the range of `if` statements. This can probably be performed using `contains()`.
+9. Make sure that if a variable depends on more than 1 unsanitised variables, only sanitise the former one if the dependencies are not used elsewhere.
 
 
 ---
