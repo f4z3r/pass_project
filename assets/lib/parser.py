@@ -46,8 +46,10 @@ class Parser:
         self.sink = re.compile(r"sink\s*\(\s*(?P<label>\w+)\s*,\s*(?P<var>\w+)\s*\)")
         self.follows = re.compile(r"follows\s*\(\s*(?P<after>\w+)\s*,"
                                   r"\s*(?P<before>\w+)\s*\)")
-        self.if_stat = re.compile(r"if\s*\(\s*(?P<label>\w+)\s*,\s*(?P<jump>\w+)\s*,"
+        self.if_stat_fallback = re.compile(r"if\s*\(\s*(?P<label>\w+)\s*,\s*(?P<jump>\w+)\s*,"
                                   r"\s*(?P<condition>[\w <>=]+)\s*\)")
+        self.if_stat = re.compile(r"if\s*\(\s*(?P<label>\w+)\s*,\s*(?P<jump>\w+)\s*,\s*-?\s*"
+                                  r"(?P<variable1>\w+)[ <>=]+-?\s*(?P<variable2>\w+)\s*\)")
         self.join = re.compile(r"join\s*\(\s*(?P<label>\w+)\s*, \s*(?P<join1>\w+)\s*,"
                                r"\s*(?P<join2>\w+)\s*\)")
         self.opv = re.compile(r"opv\s*\(\s*(?P<label>\w+)\s*, \s*(?P<receiver>\w+)\s*,"
@@ -95,9 +97,10 @@ class Parser:
             elif re.fullmatch(self.if_stat, token) is not None:
                 match = re.fullmatch(self.if_stat, token)
                 logger.debug("if_stat: {}".format(token))
-                self._if_stat_file.write("{}\t{}\t{}\n".format(match.group("label"),
+                self._if_stat_file.write("{}\t{}\t{}\t{}\n".format(match.group("label"),
                                                                match.group("jump"),
-                                                               match.group("condition")))
+                                                               match.group("variable1"),
+                                                               match.group("variable2")))
             elif re.fullmatch(self.join, token) is not None:
                 match = re.fullmatch(self.join, token)
                 logger.debug("join: {}".format(token))

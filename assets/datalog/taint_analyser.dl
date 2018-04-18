@@ -13,8 +13,9 @@
 .decl sink(label: label, var:var)
 // Label `l1` follows label `l2`
 .decl follows(after: label, before: label)
-// If condition `cond` at label `l1` holds then label `l2` follows label `l1`
-.decl if(label: label, jump: label, condition: cond)
+// If condition condition involving `var1` and `var2` at label `l1` holds then label `l2`
+// follows label `l1`
+.decl if(label: label, jump: label, var1: var, var2: var)
 // Join labels `l2` and `l3` at `l1`
 .decl join(label: label, join1: label, join2: label)
 // Apply `op()` to variables `y` and `z` and store the result in `x` at label `l`
@@ -57,7 +58,6 @@ changed(L, X) :- opc(L, X, _, _).
 changed_btw(X, L1, L2) :- changed(L3, X), after(L3, L1), after(L2, L3).
 changed_btw(X, L1, L2) :- changed(L2, X), after(L2, L1).
 
-
 // variable `var` was sourced between labels `label1` and `label2`.
 .decl sourced_btw(var: var, label1: label, label2: label)
 sourced_btw(X, L1, L2) :- source(L3, X), after(L3, L1), after(L2, L3).
@@ -72,29 +72,33 @@ last_src(L, X, T) :- source(T, X), !sourced_btw(X, T, L), after(L, T).
 
 // label `label` is in an if statement between label `entry` and label `join`
 .decl in_if(label: label, entry: label, join: label)
-in_if(L, E, J) :- if(E, _, _), join(J, E, _), after(L, E), after(J, L).
-in_if(L, E, J) :- if(E, _, _), join(J, _, E), after(L, E), after(J, L).
+in_if(L, E, J) :- if(E, _, _, _), join(J, E, _), after(L, E), after(J, L).
+in_if(L, E, J) :- if(E, _, _, _), join(J, _, E), after(L, E), after(J, L).
+
+// `dependent` got dependent on `on` in if with entry at label `label`
+.decl changed_in_if(dependent: var, on: var, entry: label)
+changed_in_if(X, Y, E) :- assign(L, X, Y), in_if(L, E, _).
+changed_in_if(X, Y, E) :- opv(L, X, Y, _), in_if(L, E, _).
+changed_in_if(X, Y, E) :- opv(L, X, _, Y), in_if(L, E, _).
+changed_in_if(X, Y, E) :- opc(L, X, Y, _), in_if(L, E, _).
+
+// `var` was used in condition of if at label `entry`
+.decl in_condition(var: var, entry: label)
+in_condition(X, E) :- if(E, _, X, _).
+in_condition(X, E) :- if(E, _, _, X).
+
 
 // ========================================
 // TAINTED VARIABLES
 // ========================================
 // `var` is tainted at label `l`
 .decl tainted(label: label, var: var)
-// tainted(L, X) :- flagged(L, X), !was_flagged(L, X).
 tainted(L, X) :- source(L, X).
 tainted(L, X) :- tainted(L1, X), !changed_btw(X, L1, L), after(L, L1).
 tainted(L, X) :- expl_depend(L, X, Y), tainted(L, Y), !sanitised(L, Y).
 
 .decl sanitised(label: label, var: var)
 sanitised(L, X) :- sink(L1, X), after(L, L1), !sourced_btw(X, L1, L).
-
-// variable `var` is flagged for sanitation due to sink at label `label`.
-.decl flagged(label: label, var: var)
-flagged(L, X) :- sink(L, X), source(K, Y), after(L, K), expl_depend(L, X, Y).
-
-// variable `var` was already flagged and did not change up to label `label`.
-.decl was_flagged(label: label, var:var)
-was_flagged(L, X) :- flagged(K, X), after(L, K), !changed_btw(X, K, L).
 
 
 // ========================================
@@ -119,7 +123,6 @@ expl_depend(L, X, Y) :- expl_depend(L1, X, Y), after(L, L1), !changed_btw(X, L1,
 // ========================================
 .decl impl_depend(label: label, dependent: var, on: var)
 
-// Find a way of finding variables used in `if` statements
 
 // ========================================
 // RESULT
@@ -127,7 +130,6 @@ expl_depend(L, X, Y) :- expl_depend(L1, X, Y), after(L, L1), !changed_btw(X, L1,
 .decl res(label: label, var: var)
 res(L, X) :- sink(L, X), tainted(L, X), !sanitised(L, X).
 
-.output in_if
 .output res
 
 
