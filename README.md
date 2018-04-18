@@ -50,18 +50,48 @@ The functionalities of the application work as follows:
 4. The output from step three is read by python in order to beautify the output. If a destination file is provided to `run`, this will be printed to the file instead of the console.
 
 ## Datalog TODO List
-1. Check for implicit dependencies.
-2. Find a way to learn the variables used in the `if` conditions for implicit dependencies.
-3. Find technique in method sanitation for implicit and explicit dependencies.
+1. Find technique in method sanitation for implicit and explicit dependencies.
     - Different strategies might need to be adopted for implicit and explicit dependencies.
     - Explicit dependencies seem best handled immediately before `sink()`. However, if sanitised, check that dependent variables are implicitly sanitised and don't require their own sanitation.
+    - Find a way for the following snippets:
+      1. ```
+         x := source();
+         ...
+         y = op(x, 5);
+         sink(y);
+         ...
+         sink(x);  // Only sanitation of x needed after source()
+         ```
+      2. ```
+         x := source();
+         y := source();
+         z := op(x, y);
+         sink(z);  // only sanitise z after operation
+         ```
+      3. ```
+         z := source();
+         y := source();
+         z := op(z, y);
+         sink(z);  // only sanitise z after operation
+         ```
+      4. ```
+         x := source();
+         z := op(x, 0);
+         sink(z);  // can sanitise either if x is not sunk
+         ```
+      5. ```
+         x := source();
+         y := source();
+         z := op(x, y);
+         sink(x);
+         sink(z);
+         sink(y);  // only sanitise x and y, not z
+         ```
     - Implicit dependencies seem best handled immediately after sourcing. However note that this might create problems for other variables that explicitly depend on this input as they are not sanitised.
-4. Check for handling of more complex conditions with entire operations in the condition.
-5. Figure out if you can have comparisons between several variables in a single `if` statement.
-6. Find out why implicit sanitation is required for code snippets similar to [the second example given](#examples).
-7. Is explicit sanitation required after performing a simple operation such as `x := op(x, 5)` on an already sanitised variable `x`?
-8. Implement a predicate that finds the range of `if` statements. This can probably be performed using `contains()`.
-9. Make sure that if a variable depends on more than 1 unsanitised variables, only sanitise the former one if the dependencies are not used elsewhere.
+2. Find out why implicit sanitation is required for code snippets similar to [the second example given](#examples).
+3. Is explicit sanitation required after performing a simple operation such as `x := op(x, 5)` on an already sanitised variable `x`?
+4. Implement a predicate that finds the range of `if` statements. This can probably be performed using `contains()`.
+5. Make sure that if a variable depends on more than 1 unsanitised variables, only sanitise the former one if the dependencies are not used elsewhere.
 
 
 ---
