@@ -1,5 +1,0 @@
-x := source();
-y := op(x, z);
-if(y > 0):
-    y := 5;
-sink(y);

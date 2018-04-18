@@ -1,5 +1,0 @@
-source(l1, x)
-follows(l2, l1), opv(l2, y, x, z)
-follows(l3, l2), if(l3, l4, y > 0)
-follows(l4, l3), assign(l4, y, 5)
-follows(l5, l4), follows(l5, l2), join(l5, l2, l4), sink(l5, y)
