@@ -110,7 +110,7 @@ def read_csv(filename):
         reader = csv.reader(file, delimiter="\t")
         result = list(reader)
 
-    return sorted([[row[0], *list(map(int, row[1:]))] for row in result])
+    return sorted(result)
 
 
 def print_csv(data, filename=None):
@@ -121,7 +121,8 @@ def print_csv(data, filename=None):
         filename (os.path.Path): optional - the file to which to write the data
     """
     if filename is None:
-        print("\nRESULTS\nvar\tlocation")
+        if not properties["args"].quiet:
+            print("\nRESULTS\nvar\tlocation")
         for row in data:
             print("\t".join(row))
     else:

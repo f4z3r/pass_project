@@ -1,0 +1,4 @@
+source(1, x)
+follows(2, 1) if(2, 4, x, 0)
+follows(3, 2) assign(3, z, 1, 0)
+follows(4, 3) follows(4, 2) join(4, 3, 2) sink(4, z)

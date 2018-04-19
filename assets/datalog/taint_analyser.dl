@@ -18,12 +18,8 @@
 .decl if(label: label, jump: label, var1: var, var2: var)
 // Join labels `l2` and `l3` at `l1`
 .decl join(label: label, join1: label, join2: label)
-// Apply `op()` to variables `y` and `z` and store the result in `x` at label `l`
-.decl opv(label: label, receiver: var, var1: var, var2: var)
-// Apply `op()` to variable `y` and constant `c` and store the result in `x` at label `l`
-.decl opc(label: label, receiver: var, var: var, const: const)
 // Assign the variable/constant `y` to `x` at label `l`
-.decl assign(label: label, receiver: var, var: var)
+.decl assign(label: label, receiver: var, var1: var, var2: var)
 
 
 // -- facts --
@@ -32,8 +28,6 @@
 .input follows
 .input if
 .input join
-.input opv
-.input opc
 .input assign
 
 // -- analysis --
@@ -48,10 +42,8 @@ after(L1, L2) :- after(L1, L3), follows(L3, L2).
 
 // variable `var` changed at label `label`.
 .decl changed(label: label, var: var)
-changed(L, X) :- assign(L, X, _).
+changed(L, X) :- assign(L, X, _, _).
 changed(L, X) :- source(L, X).
-changed(L, X) :- opv(L, X, _, _).
-changed(L, X) :- opc(L, X, _, _).
 
 // `label` is between `from` and `to`
 .decl between(label: label, from: label, to: label)
@@ -69,8 +61,8 @@ sourced_btw(X, L1, L2) :- source(L2, X), after(L2, L1).
 
 // variable `var` was assigned to between labels `label1` and `label2`.
 .decl assigned_btw(var: var, label1: label, label2: label)
-assigned_btw(X, L1, L2) :- assign(L3, X, _), between(L3, L1, L2).
-assigned_btw(X, L1, L2) :- assign(L2, X, _), after(L2, L1).
+assigned_btw(X, L1, L2) :- assign(L3, X, _, _), between(L3, L1, L2).
+assigned_btw(X, L1, L2) :- assign(L2, X, _, _), after(L2, L1).
 
 // variable `var` was sunk between labels `label1` and `label2`.
 .decl sunk_btw(var: var, label1: label, label2: label)
@@ -87,8 +79,10 @@ last_src(L, X, T) :- source(T, X), !sourced_btw(X, T, L), after(L, T).
 
 // label `label` is in an if statement between label `entry` and label `join`
 .decl in_if_rng(label: label, entry: label, join: label)
-in_if_rng(L, E, J) :- if(E, _, _, _), join(J, E, _), between(L, E, J).
-in_if_rng(L, E, J) :- if(E, _, _, _), join(J, _, E), between(L, E, J).
+in_if_rng(L, E, J) :- if(E, _, _, _), join(J, _, _), between(L, E, J).
+in_if_rng(L, E, J) :- if(E, _, _, _), join(J, _, _), between(L, E, J).
+// in_if_rng(L, E, J) :- if(E, _, _, _), join(J, E1, _), between(L, E, J), follows(E, E1).
+// in_if_rng(L, E, J) :- if(E, _, _, _), join(J, _, E1), between(L, E, J), follows(E, E1).
 
 // label `label` is in any if statement
 .decl in_if(label: label)
@@ -96,9 +90,7 @@ in_if(L) :- in_if_rng(L, _, _).
 
 // `var` was changed at label `label` in if with entry at label `label`
 .decl changed_in_if(var: var, label: label, entry: label)
-changed_in_if(X, L, E) :- assign(L, X, _), in_if_rng(L, E, _).
-changed_in_if(X, L, E) :- opv(L, X, _, _), in_if_rng(L, E, _).
-changed_in_if(X, L, E) :- opc(L, X, _, _), in_if_rng(L, E, _).
+changed_in_if(X, L, E) :- assign(L, X, _, _), in_if_rng(L, E, _).
 
 // `var` was used in condition of if at label `entry`
 .decl in_condition(var: var, entry: label)
@@ -110,12 +102,9 @@ in_condition(X, E) :- if(E, _, _, X).
 // ========================================
 // `dependent` is explicitly dependent on `on` due to operation at label `op`
 .decl expl_depend(label: label, dependent: var, on: var, op: label)
-// Explicit dependence on operations
-expl_depend(L1, X, Y, L) :- opc(L, X, Y, _), follows(L1, L).
-expl_depend(L1, X, Y, L) :- opv(L, X, Y, _), follows(L1, L).
-expl_depend(L1, X, Y, L) :- opv(L, X, _, Y), follows(L1, L).
 // Explicit dependence on assignment
-expl_depend(L1, X, Y, L) :- assign(L, X, Y), follows(L1, L).
+expl_depend(L1, X, Y, L) :- assign(L, X, Y, _), follows(L1, L).
+expl_depend(L1, X, Y, L) :- assign(L, X, _, Y), follows(L1, L).
 
 // Dependence carries over as long as it does not change
 expl_depend(L1, X, Y, L) :- expl_depend(L2, X, Y, L), after(L1, L2), !changed_btw(X, L2, L1).
@@ -130,8 +119,8 @@ impl_depend(L, X, Y, E) :- changed_in_if(X, L, E), in_condition(Y, E).
 impl_depend(L, X, Y, E) :- impl_depend(L1, X, Y, E), after(L, L1), !changed_btw(X, L1, L).
 
 .decl impl_dep_btw(dependent: var, on: var, from: label, to: label)
-impl_dep_btw(X, Y, F, T) :- impl_depend(L1, X, Y, _), between(L1, F, T).
-impl_dep_btw(X, Y, F, T) :- impl_depend(L1, X, Y, _), after(T, F).
+impl_dep_btw(X, Y, F, T) :- impl_depend(L1, X, Y, _), tainted(L1, Y), between(L1, F, T).
+impl_dep_btw(X, Y, F, T) :- impl_depend(L1, X, Y, _), tainted(L1, Y), after(T, F).
 
 
 // ========================================
@@ -151,7 +140,7 @@ sanitised(L, X) :- expl_depend(L, Y, X, _).
 // `var` requires sanitation between labels `from` to label `to`
 .decl req_san(var: var, from: label, to: label)
 req_san(X, F, T) :- source(F, X), !in_if(F), sink(T, X), after(T, F), !changed_btw(X, F, T), !sunk_btw(X, F, T1), follows(T, T1).
-req_san(X, F, T) :- tainted(F, Y), !sanitised(F, Y), expl_depend(_, X, Y, F), sink(T, X), after(T, F), !changed_btw(X, F, T), !impl_dep_btw(X, _, F, T).
+req_san(X, F, T) :- tainted(F, Y), !sanitised(F, Y), expl_depend(_, X, Y, F), sink(T, X), after(T, F), !changed_btw(X, F, T), !impl_dep_btw(X, Y, F, T).
 
 // `var` requires sanitation at label`at`
 .decl req_san_at(var: var, at: label)

@@ -1,6 +1,6 @@
 source(1, x)
-follows(2, 1) assign(2, x, 5)
+follows(2, 1) assign(2, x, 5, 0)
 follows(3, 2) sink(3, x)
 follows(4, 3) source(4, x)
-follows(5, 4) opc(5, x, x, 5)
+follows(5, 4) assign(5, x, x, 5)
 follows(6, 5) sink(6, x)
