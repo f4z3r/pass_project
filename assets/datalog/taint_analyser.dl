@@ -1,8 +1,9 @@
-// A taint analyser.
+// A taint analyser
 
 .type label
-.number_type const
 .type var
+.number_type const
+.number_type num
 
 // -- inputs --
 
@@ -52,15 +53,29 @@ changed(L, X) :- source(L, X).
 changed(L, X) :- opv(L, X, _, _).
 changed(L, X) :- opc(L, X, _, _).
 
+// `label` is between `from` and `to`
+.decl between(label: label, from: label, to: label)
+between(L, F, T) :- after(L, F), after(T, L).
+
 // variable `var` changed between labels `label1` and `label2`.
 .decl changed_btw(var: var, label1: label, label2: label)
-changed_btw(X, L1, L2) :- changed(L3, X), after(L3, L1), after(L2, L3).
+changed_btw(X, L1, L2) :- changed(L3, X), between(L3, L1, L2).
 changed_btw(X, L1, L2) :- changed(L2, X), after(L2, L1).
 
 // variable `var` was sourced between labels `label1` and `label2`.
 .decl sourced_btw(var: var, label1: label, label2: label)
-sourced_btw(X, L1, L2) :- source(L3, X), after(L3, L1), after(L2, L3).
+sourced_btw(X, L1, L2) :- source(L3, X), between(L3, L1, L2).
 sourced_btw(X, L1, L2) :- source(L2, X), after(L2, L1).
+
+// variable `var` was assigned to between labels `label1` and `label2`.
+.decl assigned_btw(var: var, label1: label, label2: label)
+assigned_btw(X, L1, L2) :- assign(L3, X, _), between(L3, L1, L2).
+assigned_btw(X, L1, L2) :- assign(L2, X, _), after(L2, L1).
+
+// variable `var` was sunk between labels `label1` and `label2`.
+.decl sunk_btw(var: var, label1: label, label2: label)
+sunk_btw(X, L1, L2) :- sink(L3, X), between(L3, L1, L2).
+sunk_btw(X, L1, L2) :- sink(L2, X), after(L2, L1).
 
 // at label `label`, `target` is where the last change to `var` occured.
 .decl last_chg(label: label, var: var, target: label)
@@ -72,15 +87,14 @@ last_src(L, X, T) :- source(T, X), !sourced_btw(X, T, L), after(L, T).
 
 // label `label` is in an if statement between label `entry` and label `join`
 .decl in_if(label: label, entry: label, join: label)
-in_if(L, E, J) :- if(E, _, _, _), join(J, E, _), after(L, E), after(J, L).
-in_if(L, E, J) :- if(E, _, _, _), join(J, _, E), after(L, E), after(J, L).
+in_if(L, E, J) :- if(E, _, _, _), join(J, E, _), between(L, E, J).
+in_if(L, E, J) :- if(E, _, _, _), join(J, _, E), between(L, E, J).
 
 // `var` was changed at label `label` in if with entry at label `label`
 .decl changed_in_if(var: var, label: label, entry: label)
-changed_in_if(X, L, E) :- assign(L, X, Y), in_if(L, E, _).
-changed_in_if(X, L, E) :- opv(L, X, Y, _), in_if(L, E, _).
-changed_in_if(X, L, E) :- opv(L, X, _, Y), in_if(L, E, _).
-changed_in_if(X, L, E) :- opc(L, X, Y, _), in_if(L, E, _).
+changed_in_if(X, L, E) :- assign(L, X, _), in_if(L, E, _).
+changed_in_if(X, L, E) :- opv(L, X, _, _), in_if(L, E, _).
+changed_in_if(X, L, E) :- opc(L, X, _, _), in_if(L, E, _).
 
 // `var` was used in condition of if at label `entry`
 .decl in_condition(var: var, entry: label)
@@ -88,60 +102,74 @@ in_condition(X, E) :- if(E, _, X, _).
 in_condition(X, E) :- if(E, _, _, X).
 
 // ========================================
-// TAINTED VARIABLES
-// ========================================
-// `var` is tainted at label `l`
-.decl tainted(label: label, var: var)
-tainted(L, X) :- source(L, X).
-tainted(L, X) :- tainted(L1, X), !changed_btw(X, L1, L), after(L, L1).
-tainted(L, X) :- expl_depend(L, X, Y), tainted(L, Y), !sanitised(L, Y).
-tainted(L, X) :- expl_depend(L, X, X), tainted(L1, X), follows(L, L1).
-tainted(L, X) :- impl_depend(L, X, Y), tainted(L, Y), !sanitised(L, Y).
-
-.decl sanitised(label: label, var: var)
-sanitised(L, X) :- sink(L1, X), after(L, L1), !sourced_btw(X, L1, L).
-
-
-// ========================================
 // EXPLICIT DEPENDENCE
 // ========================================
-// `x` is explicitly dependent on `y`
-.decl expl_depend(label: label, dependent: var, on: var)
-// Transitivity
-expl_depend(L, X, Z) :- expl_depend(L, X, Y), expl_depend(L, Y, Z).
+// `dependent` is explicitly dependent on `on` due to operation at label `op`
+.decl expl_depend(label: label, dependent: var, on: var, op: label)
 // Explicit dependence on operations
-expl_depend(L, X, Y) :- opc(L, X, Y, _).
-expl_depend(L, X, Y) :- opv(L, X, Y, _).
-expl_depend(L, X, Y) :- opv(L, X, _, Y).
+expl_depend(L1, X, Y, L) :- opc(L, X, Y, _), follows(L1, L).
+expl_depend(L1, X, Y, L) :- opv(L, X, Y, _), follows(L1, L).
+expl_depend(L1, X, Y, L) :- opv(L, X, _, Y), follows(L1, L).
 // Explicit dependence on assignment
-expl_depend(L, X, Y) :- assign(L, X, Y).
+expl_depend(L1, X, Y, L) :- assign(L, X, Y), follows(L1, L).
 
 // Dependence carries over as long as it does not change
-expl_depend(L, X, Y) :- expl_depend(L1, X, Y), after(L, L1), !changed_btw(X, L1, L).
+expl_depend(L1, X, Y, L) :- expl_depend(L2, X, Y, L), after(L1, L2), !changed_btw(X, L2, L1).
 
 // ========================================
 // IMPLICIT DEPENDENCE
 // ========================================
-.decl impl_depend(label: label, dependent: var, on: var)
-impl_depend(L, X, Y) :- changed_in_if(X, L, E), in_condition(Y, E).
-// Transitivity
-impl_depend(L, X, Z) :- impl_depend(L, X, Y), impl_depend(L, Y, Z).
+// `dependent` is implicitly dependent on `on` due to condition at `cond`
+.decl impl_depend(label: label, dependent: var, on: var, cond: label)
+impl_depend(L, X, Y, E) :- changed_in_if(X, L, E), in_condition(Y, E).
 // Dependence carries over as long as it does not change
-impl_depend(L, X, Y) :- impl_depend(L1, X, Y), after(L, L1), !changed_btw(X, L1, L).
+impl_depend(L, X, Y, E) :- impl_depend(L1, X, Y, E), after(L, L1), !changed_btw(X, L1, L).
 
 
+// ========================================
+// TAINTED VARIABLES
+// ========================================
+// `var` is tainted at label `l`
+.decl tainted(label: label, var: var)
+tainted(L, X) :- source(L1, X), follows(L, L1).
+tainted(L, X) :- tainted(L1, X), !changed_btw(X, L1, L), after(L, L1).
+tainted(L, X) :- expl_depend(L, X, Y, L1), tainted(L1, Y).
+tainted(L, X) :- impl_depend(L, X, Y, _), tainted(L, Y).
+
+.decl sanitised(label: label, var: var)
+sanitised(L, X) :- sink(L1, X), after(L, L1), !sourced_btw(X, L1, L).
+sanitised(L, X) :- expl_depend(L, Y, X, _).
+
+// `var` requires sanitation between labels `from` to label `to`
+.decl req_san(var: var, from: label, to: label)
+req_san(X, F, T) :- source(F, X), sink(T, X), after(T, F), !changed_btw(X, F, T), !sunk_btw(X, F, T1), follows(T, T1).
+req_san(X, F, T) :- tainted(F, Y), !sanitised(F, Y), expl_depend(_, X, Y, F), sink(T, X), after(T, F), !changed_btw(X, F, T).
+req_san(X, F, T) :- tainted(F, Y), !sanitised(F, Y), impl_depend(L1, X, Y, F), sink(T, X), after(T, F), !changed_btw(X, L1, T).
+
+// `var` requires sanitation at label`at`
+.decl req_san_at(var: var, at: label)
+req_san_at(X, L) :- req_san(X, F, T), between(L, F, T).
+
+// `var` being sunk at `label` is dependent on `num` variables that need to be also sanitised
+.decl dep_san(label: label, var: var, num: num)
+dep_san(L, X, C) :- req_san(X, _, L), C = count: {expl_depend(L, X, Y, L1), req_san(Y, F, T), between(L1, F, T)}.
 
 // ========================================
 // RESULT
 // ========================================
 .decl res(var: var, label: label)
-res(X, L) :- sink(L, X), tainted(L, X), !sanitised(L, X).
+res(X, F) :- req_san(X, F1, L), dep_san(L, X, C), C < 1, FC = count: {follows(_, F1)}, FC < 2, follows(F, F1).
+res(X, L) :- req_san(X, F, L), dep_san(L, X, C), C < 1, FC = count: {follows(_, F)}, FC > 1.
+res(X, O) :- tainted(O, X), !sanitised(O, X), expl_depend(T, Y, X, O), req_san(Y, _, T), !req_san_at(X, O), X != Y, dep_san(T, Y, C), C > 0.
 
 .output res
+.output dep_san
+.output req_san
+.output expl_depend
+.output tainted
+.output sanitised
 
 // .decl test(var: var, label:label)
 // test(X, L) :- tainted(L, X), X = "x".
 
 // .output test
-
-

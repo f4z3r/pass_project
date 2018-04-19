@@ -79,8 +79,9 @@ class TestDatalog(unittest.TestCase):
                     if res[1] <= out[1] <= res[2]:
                         break
                     else:
-                        self.fail("{} is not in [{}, {}] for {}".format(out[1], res[1],
-                                                                        res[2], out[0]))
+                        self.fail("{} is not in [{}, {}] for {}".format(out[1], res[1], res[2],
+                                                                        out[0]) + \
+                                  "\nSee file {}".format(filename_output))
 
 
 
