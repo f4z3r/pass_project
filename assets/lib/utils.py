@@ -109,7 +109,9 @@ def read_csv(filename):
     with open(filename, "r", newline="") as file:
         reader = csv.reader(file, delimiter="\t")
         result = list(reader)
-    return result
+
+    return sorted([[row[0], *list(map(int, row[1:]))] for row in result])
+
 
 def print_csv(data, filename=None):
     """Prints data from a list of records to the console or to a file.

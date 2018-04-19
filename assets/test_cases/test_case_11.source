@@ -1,0 +1,10 @@
+x := source();
+v := 5;
+if(x > 0):
+    y := opv(x, z);
+    w := source();
+    v := 10;
+sink(z);                // No
+z := source();
+sink(w);                // Sanitise see l6
+sink(y);                // Sanitise see l2, l5

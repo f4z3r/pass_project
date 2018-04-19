@@ -131,7 +131,7 @@ impl_depend(L, X, Y, E) :- impl_depend(L1, X, Y, E), after(L, L1), !changed_btw(
 
 .decl impl_dep_btw(dependent: var, on: var, from: label, to: label)
 impl_dep_btw(X, Y, F, T) :- impl_depend(L1, X, Y, _), between(L1, F, T).
-impl_dep_btw(X, Y, F, T) :- impl_depend(last_src, X, Y, _), after(T, F).
+impl_dep_btw(X, Y, F, T) :- impl_depend(L1, X, Y, _), after(T, F).
 
 
 // ========================================
