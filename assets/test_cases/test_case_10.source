@@ -1,0 +1,7 @@
+x := source();
+y := source();
+z := op(x, y);
+n := (x, z);
+sink(y);
+sink(z);
+sink(n);    // Only sanitise x and y

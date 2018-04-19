@@ -1,0 +1,7 @@
+source(1, x)
+follows(2, 1) source(2, y)
+follows(3, 2) opv(3, z, x, y)
+follows(4, 3) opv(4, n, x, z)
+follows(5, 4) sink(5, y)
+follows(6, 5) sink(6, z)
+follows(7, 6) sink(7, n)

@@ -1,0 +1,3 @@
+x := source();
+z := op(x, 0);
+sink(z);    // Only sanitise z (or x but choose z for simplicity)

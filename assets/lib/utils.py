@@ -123,7 +123,7 @@ def print_csv(data, filename=None):
         for row in data:
             print("\t".join(row))
     else:
-        logger.debug("Writing results to file {}".format(filename))
+        logger.info("Writing results to file {}".format(filename))
         with open(filename, "w") as file:
             file.write("var\tlocation\n")
             for row in data:

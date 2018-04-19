@@ -1,0 +1,4 @@
+x := source();
+y := op(x, 5);
+sink(y);
+sink(x);        // Only sanitise x
