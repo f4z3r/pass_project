@@ -53,6 +53,10 @@ class TestDatalog(unittest.TestCase):
         outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_10.dl")).run()
         self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_10.csv"))
 
+    def test_case_11(self):
+        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_11.dl")).run()
+        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_11.csv"))
+
 
 
 
@@ -73,8 +77,8 @@ class TestDatalog(unittest.TestCase):
                          "Too many or too few sanitations. See file {}".format(filename_output))
 
         # Check if all results are present
-        for res in result:
-            for out in output:
+        for res in sorted(result):
+            for out in sorted(output):
                 if res[0] == out[0]:
                     if res[1] <= out[1] <= res[2]:
                         break

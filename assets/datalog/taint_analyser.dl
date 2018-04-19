@@ -86,15 +86,19 @@ last_chg(L, X, T) :- changed(T, X), !changed_btw(X, T, L), after(L, T).
 last_src(L, X, T) :- source(T, X), !sourced_btw(X, T, L), after(L, T).
 
 // label `label` is in an if statement between label `entry` and label `join`
-.decl in_if(label: label, entry: label, join: label)
-in_if(L, E, J) :- if(E, _, _, _), join(J, E, _), between(L, E, J).
-in_if(L, E, J) :- if(E, _, _, _), join(J, _, E), between(L, E, J).
+.decl in_if_rng(label: label, entry: label, join: label)
+in_if_rng(L, E, J) :- if(E, _, _, _), join(J, E, _), between(L, E, J).
+in_if_rng(L, E, J) :- if(E, _, _, _), join(J, _, E), between(L, E, J).
+
+// label `label` is in any if statement
+.decl in_if(label: label)
+in_if(L) :- in_if_rng(L, _, _).
 
 // `var` was changed at label `label` in if with entry at label `label`
 .decl changed_in_if(var: var, label: label, entry: label)
-changed_in_if(X, L, E) :- assign(L, X, _), in_if(L, E, _).
-changed_in_if(X, L, E) :- opv(L, X, _, _), in_if(L, E, _).
-changed_in_if(X, L, E) :- opc(L, X, _, _), in_if(L, E, _).
+changed_in_if(X, L, E) :- assign(L, X, _), in_if_rng(L, E, _).
+changed_in_if(X, L, E) :- opv(L, X, _, _), in_if_rng(L, E, _).
+changed_in_if(X, L, E) :- opc(L, X, _, _), in_if_rng(L, E, _).
 
 // `var` was used in condition of if at label `entry`
 .decl in_condition(var: var, entry: label)
@@ -125,6 +129,10 @@ impl_depend(L, X, Y, E) :- changed_in_if(X, L, E), in_condition(Y, E).
 // Dependence carries over as long as it does not change
 impl_depend(L, X, Y, E) :- impl_depend(L1, X, Y, E), after(L, L1), !changed_btw(X, L1, L).
 
+.decl impl_dep_btw(dependent: var, on: var, from: label, to: label)
+impl_dep_btw(X, Y, F, T) :- impl_depend(L1, X, Y, _), between(L1, F, T).
+impl_dep_btw(X, Y, F, T) :- impl_depend(last_src, X, Y, _), after(T, F).
+
 
 // ========================================
 // TAINTED VARIABLES
@@ -142,9 +150,8 @@ sanitised(L, X) :- expl_depend(L, Y, X, _).
 
 // `var` requires sanitation between labels `from` to label `to`
 .decl req_san(var: var, from: label, to: label)
-req_san(X, F, T) :- source(F, X), sink(T, X), after(T, F), !changed_btw(X, F, T), !sunk_btw(X, F, T1), follows(T, T1).
-req_san(X, F, T) :- tainted(F, Y), !sanitised(F, Y), expl_depend(_, X, Y, F), sink(T, X), after(T, F), !changed_btw(X, F, T).
-req_san(X, F, T) :- tainted(F, Y), !sanitised(F, Y), impl_depend(L1, X, Y, F), sink(T, X), after(T, F), !changed_btw(X, L1, T).
+req_san(X, F, T) :- source(F, X), !in_if(F), sink(T, X), after(T, F), !changed_btw(X, F, T), !sunk_btw(X, F, T1), follows(T, T1).
+req_san(X, F, T) :- tainted(F, Y), !sanitised(F, Y), expl_depend(_, X, Y, F), sink(T, X), after(T, F), !changed_btw(X, F, T), !impl_dep_btw(X, _, F, T).
 
 // `var` requires sanitation at label`at`
 .decl req_san_at(var: var, at: label)
@@ -152,24 +159,31 @@ req_san_at(X, L) :- req_san(X, F, T), between(L, F, T).
 
 // `var` being sunk at `label` is dependent on `num` variables that need to be also sanitised
 .decl dep_san(label: label, var: var, num: num)
-dep_san(L, X, C) :- req_san(X, _, L), C = count: {expl_depend(L, X, Y, L1), req_san(Y, F, T), between(L1, F, T)}.
-
+dep_san(L, X, C) :- req_san(X, _, L), C = count: {expl_depend(L, X, Y, L1), req_san(Y, F, T), between(L1, F, T), !impl_depend(L, X, Y, _)}.
 // ========================================
 // RESULT
 // ========================================
+.decl no_dep(var: var, label:label)
+no_dep(X, L) :- req_san(X, F, L), dep_san(L, X, C), C < 1, FC = count: {follows(_, F)}, FC > 1.
+no_dep(X, F) :- req_san(X, F1, L), dep_san(L, X, C), C < 1, FC = count: {follows(_, F1)}, FC < 2, follows(F, F1).
+
+.decl dep_in_if(var: var, label:label)
+dep_in_if(X, T) :- tainted(F, Y), !sanitised(F, Y), impl_depend(L1, X, Y, F), sink(T, X), after(T, F), !changed_btw(X, L1, T).
+dep_in_if(X, T) :- source(F, X), in_if(F), sink(T, X), after(T, F), !changed_btw(X, F, T), !sunk_btw(X, F, T1), follows(T, T1).
+
+
+.decl have_dep(var: var, label:label)
+have_dep(X, O) :- tainted(O, X), !sanitised(O, X), expl_depend(T, Y, X, O), req_san(Y, _, T), !req_san_at(X, O), X != Y, dep_san(T, Y, C), C > 0.
+
 .decl res(var: var, label: label)
-res(X, F) :- req_san(X, F1, L), dep_san(L, X, C), C < 1, FC = count: {follows(_, F1)}, FC < 2, follows(F, F1).
-res(X, L) :- req_san(X, F, L), dep_san(L, X, C), C < 1, FC = count: {follows(_, F)}, FC > 1.
-res(X, O) :- tainted(O, X), !sanitised(O, X), expl_depend(T, Y, X, O), req_san(Y, _, T), !req_san_at(X, O), X != Y, dep_san(T, Y, C), C > 0.
+res(X, L) :- no_dep(X, L).
+res(X, L) :- dep_in_if(X, L).
+res(X, L) :- have_dep(X, L).
+
 
 .output res
-.output dep_san
-.output req_san
-.output expl_depend
-.output tainted
-.output sanitised
 
-// .decl test(var: var, label:label)
-// test(X, L) :- tainted(L, X), X = "x".
+// .decl test(label: label, var: var, dep: var, entry:label)
+// test(L, X, Y, L1) :- impl_depend(L, X, Y, L1), tainted(L1, Y).
 
 // .output test
