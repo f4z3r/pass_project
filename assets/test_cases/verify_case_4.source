@@ -1,0 +1,15 @@
+x:=source();
+y:=source();
+z:=source();
+if(z > 0) {
+    w := x;
+}
+else {
+    w := 0;
+}
+sink(w);
+sink(x);
+sink(y);
+sink(z);
+
+// expected output: (4,"x"), (4,"y"), (4,"z").

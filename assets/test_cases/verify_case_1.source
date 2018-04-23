@@ -1,0 +1,11 @@
+x := source();
+y := x+z;
+if(z + 2 > 0) {
+    y := 5;
+}
+else {
+    z := 2;
+}
+sink(y);
+
+// Checks for the branching mechanism. Note that here we only need `y` to be sanitised on in the else branch.

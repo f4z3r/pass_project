@@ -1,6 +1,0 @@
-x := source();
-y := source();
-z := op(x, y);
-sink(x);
-sink(y);
-sink(z);        // Only sanitise x and y

@@ -1,4 +1,12 @@
 x := source();
-if (x > 0):
-    y := 5;
+if(x > 0) {
+    y := 0;
+}
+else {
+    z := 1;
+}
 sink(y);
+sink(z);
+
+// Checks for implicit dependencies. Here both `y` and `z` are dependent on `x` hence only a single sanitation of `x`
+// is enough.

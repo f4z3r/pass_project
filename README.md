@@ -107,6 +107,31 @@ The functionalities of the application work as follows:
 4. Implement a predicate that finds the range of `if` statements. This can probably be performed using `contains()`.
 5. Make sure that if a variable depends on more than 1 unsanitised variables, only sanitise the former one if the dependencies are not used elsewhere.
 
+## Ideas
+Consider using path predicates to compute the number of paths between two labels. If sanitations are required on a subset of paths from one label to another, sanitise only on the paths. If all paths require sanitation, sanitise before (? check email).
+
+In order to compute the extent of `if` statements, check for straight code flow between if and join calls. How do we distinguish between the following code snippets:
+
+1. ```
+   x := source();
+   if(x > 0) {
+     x := 0;
+     if(x <= 0) {
+       z := x + y;
+     } // Maybe inner join here
+   } // Both joins can be here depending on how the code is layout.
+   ```
+   This results in two joins, bath called where the comment is.
+2. ```
+   x := source();
+   if(x > 0) {
+     x := 0;
+   } else {
+     z := x + y;
+   }
+   ```
+   This results in a single call to join on the last line of the code snippet.
+
 
 ---
 

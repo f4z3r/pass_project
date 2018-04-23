@@ -1,4 +1,11 @@
 x := source();
-y := op(x, 5);
-sink(y);
-sink(x);        // Only sanitise x
+if(y > 0) {
+    x := 5;
+}
+else {
+    y := x + 1;
+}
+sink(x);
+
+// Checks that if a variable is detainted in a branch, it should only be sanitised in the other branch. In other words,
+// in this case only a sanitation in the `else` branch is required.

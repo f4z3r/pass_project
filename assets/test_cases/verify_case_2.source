@@ -1,0 +1,10 @@
+x := source();
+if(x > 0) {
+    z := 0;
+}
+else {
+    z := 1;
+}
+sink(z);
+
+//expected output: (2,"x") or (8,"z")

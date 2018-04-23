@@ -1,4 +1,11 @@
-y := source();
-z := source();
-x := op(y, z);
-sink(x);
+x := source();
+if(z > 0) {
+    y := x + 0;
+}
+else {
+    z := 1;
+}
+sink(y);
+
+// Checks that the minimum number of calls happens with respect to program flow. In this case, only one branch
+// creates a dependency of `y` on a tainted variable, hence the sanitation should only be called in that branch.

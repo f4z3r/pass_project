@@ -2,10 +2,9 @@
 
 .type label
 .type var
-.number_type const
 .number_type num
 
-// -- inputs --
+// --> inputs <--
 
 // Assign output of `source()` to variable `x` at label `l`
 .decl source(label: label, var: var)
@@ -21,8 +20,8 @@
 // Assign the variable/constant `y` to `x` at label `l`
 .decl assign(label: label, receiver: var, var1: var, var2: var)
 
+// --> facts <--
 
-// -- facts --
 .input source
 .input sink
 .input follows
@@ -30,149 +29,325 @@
 .input join
 .input assign
 
-// -- analysis --
+// --> analysis <--
 
 // ========================================
 // PROGRAM FLOW
 // ========================================
-// `after` occurs after `before` in the control flow.
-.decl after(after: label, before: label)
-after(L1, L2) :- follows(L1, L2).
-after(L1, L2) :- after(L1, L3), follows(L3, L2).
+// `label` is the first label
+.decl first(label: label)
+first(L) :- follows(_, L), C = count: {follows(L, _)}, C = 0.
 
+// `label` is the last label
+.decl last(label: label)
+last(L) :- follows(L, _), C = count: {path(L, _)}, C = 0.
+
+// there is at least one path between `from` and `to` in the control flow.
+.decl path(from: label, to: label)
+path(F, T) :- follows(T, F).
+path(F, T) :- path(F, T1), follows(T, T1).
+
+// `label` is between `from` and `to` (exclusive on both ends).
+.decl btw(label: label, from: label, to: label)
+btw(L, F, T) :- path(F, L), path(L, T).
+
+// there is a line between `from` and `to` in the program flow. Note that where conditions are checked, the statement
+// counts as part of the line. This is a linear unit of program flow.
+.decl line(from: label, to: label)
+line(F, T) :- path(F, T), if(F, _, _, _), !join_btw(F, T1), !if_btw(F, T1), join(T1, _, _), follows(T1, T).
+line(F, T) :- path(F, T), join(F, _, _), !join_btw(F, T1), !if_btw(F, T1), join(T1, _, _), follows(T1, T).
+line(F, T) :- path(F, T), join(F, _, _), !join_btw(F, T1), !if_btw(F, T1), if(T1, _, _, _), follows(T1, T).
+line(F, T) :- path(F, T), if(F, _, _, _), !join_btw(F, T1), !if_btw(F, T1), if(T1, _, _, _), follows(T1, T).
+// Declare the last line as a line as well
+line(F, T) :- last(T), join(F, _, _), !join_btw(F, T), !if_btw(F, T), !join(T, _, _).
+line(T, T) :- last(T), join(T, _, _).
+// Line if no control flow in program
+line(F, T) :- last(T), first(F), !if_btw(F, T), !join_btw(F, T), !if(F, _, _, _), !join(T, _, _).
+
+// A full branch in an if statement. Can have sub branches.
+.decl branch(from: label, to:label)
+branch(F, T) :- path(F, T), if(F, _, _, _), !join_btw(F, T1), !if_btw(F, T1), join(T1, _, _), follows(T1, T).
+branch(F, T) :- line(F, T1), branch(F1, T2), line(F2, T),
+                follows(F1, T1),
+                follows(F2, T2), join(F2, _, _).
+branch(F, T) :- branch(F1, T2), line(F2, T),
+                follows(F1, F), if(F, _, _, _),
+                follows(F2, T2), join(F2, _, _).
+branch(F, T) :- line(F, T1), branch(F1, T),
+                follows(F1, T1),
+                follows(L1, T), join(L1, _, _),
+                follows(L2, L1), join(L2, _, _).
+branch(F, T) :- branch(F1, T1),
+                follows(F1, F), if(F, _, _, _),
+                follows(T, T1), join(T, _, _),
+                follows(L1, T), join(L1, _, _).
+// Add the entire program as a branch
+branch(F, T) :- path(F, T), first(F), last(T).
+
+// the parent branch of a given branch.
+.decl parent_b(from: label, to: label, P_f: label, p_t: label)
+parent_b(F, T, PF, PT) :- branch(F, T), branch(PF, PT), line(FL, PT), follows(FL, T).
+parent_b(F, T, PF, PT) :- branch(F, T), branch(PF, PT), path(PF, F), follows(PT, T).
+// program it its own parent
+parent_b(F, T, F, T) :- first(F), last(T).
+
+// `var` is used in condition at label `entry`
+.decl in_cond(var: var, entry: label)
+in_cond(X, E) :- if(E, _, X, _).
+in_cond(X, E) :- if(E, _, _, X).
+
+// `label` is in branch from `from` to `to`
+.decl in_brch(label: label, from: label, to: label)
+in_brch(L, F, T) :- branch(F, T), path(F, L), path(L, T).
+in_brch(F, F, T) :- branch(F, T).
+in_brch(T, F, T) :- branch(F, T).
+
+// ========================================
+// CHANGES
+// ========================================
 // variable `var` changed at label `label`.
-.decl changed(label: label, var: var)
-changed(L, X) :- assign(L, X, _, _).
-changed(L, X) :- source(L, X).
+.decl chgd(label: label, var: var)
+chgd(L, X) :- assign(L, X, _, _).
+chgd(L, X) :- source(L, X).
 
-// `label` is between `from` and `to`
-.decl between(label: label, from: label, to: label)
-between(L, F, T) :- after(L, F), after(T, L).
+// a `join` statement occurs between `from` and `to`.
+.decl join_btw(from: label, to: label)
+join_btw(F, T) :- join(L, _, _), btw(L, F, T).
 
-// variable `var` changed between labels `label1` and `label2`.
-.decl changed_btw(var: var, label1: label, label2: label)
-changed_btw(X, L1, L2) :- changed(L3, X), between(L3, L1, L2).
-changed_btw(X, L1, L2) :- changed(L2, X), after(L2, L1).
-
-// variable `var` was sourced between labels `label1` and `label2`.
-.decl sourced_btw(var: var, label1: label, label2: label)
-sourced_btw(X, L1, L2) :- source(L3, X), between(L3, L1, L2).
-sourced_btw(X, L1, L2) :- source(L2, X), after(L2, L1).
-
-// variable `var` was assigned to between labels `label1` and `label2`.
-.decl assigned_btw(var: var, label1: label, label2: label)
-assigned_btw(X, L1, L2) :- assign(L3, X, _, _), between(L3, L1, L2).
-assigned_btw(X, L1, L2) :- assign(L2, X, _, _), after(L2, L1).
-
-// variable `var` was sunk between labels `label1` and `label2`.
-.decl sunk_btw(var: var, label1: label, label2: label)
-sunk_btw(X, L1, L2) :- sink(L3, X), between(L3, L1, L2).
-sunk_btw(X, L1, L2) :- sink(L2, X), after(L2, L1).
-
-// at label `label`, `target` is where the last change to `var` occured.
-.decl last_chg(label: label, var: var, target: label)
-last_chg(L, X, T) :- changed(T, X), !changed_btw(X, T, L), after(L, T).
-
-// at label `label`, `target` is where the last source to `var` occured.
-.decl last_src(label: label, var: var, target: label)
-last_src(L, X, T) :- source(T, X), !sourced_btw(X, T, L), after(L, T).
-
-// label `label` is in an if statement between label `entry` and label `join`
-.decl in_if_rng(label: label, entry: label, join: label)
-in_if_rng(L, E, J) :- if(E, _, _, _), join(J, _, _), between(L, E, J).
-in_if_rng(L, E, J) :- if(E, _, _, _), join(J, _, _), between(L, E, J).
-// in_if_rng(L, E, J) :- if(E, _, _, _), join(J, E1, _), between(L, E, J), follows(E, E1).
-// in_if_rng(L, E, J) :- if(E, _, _, _), join(J, _, E1), between(L, E, J), follows(E, E1).
-
-// label `label` is in any if statement
-.decl in_if(label: label)
-in_if(L) :- in_if_rng(L, _, _).
-
-// `var` was changed at label `label` in if with entry at label `label`
-.decl changed_in_if(var: var, label: label, entry: label)
-changed_in_if(X, L, E) :- assign(L, X, _, _), in_if_rng(L, E, _).
-
-// `var` was used in condition of if at label `entry`
-.decl in_condition(var: var, entry: label)
-in_condition(X, E) :- if(E, _, X, _).
-in_condition(X, E) :- if(E, _, _, X).
+// a `if` statement occurs between `from` and `to`.
+.decl if_btw(from: label, to: label)
+if_btw(F, T) :- if(L, _, _, _), btw(L, F, T).
 
 // ========================================
-// EXPLICIT DEPENDENCE
+// DEPENDENCE
 // ========================================
-// `dependent` is explicitly dependent on `on` due to operation at label `op`
-.decl expl_depend(label: label, dependent: var, on: var, op: label)
+// `dependent` is dependent on `on` due to operation at label `op`
+.decl dpnd(label: label, dependent: var, on: var, op: label)
 // Explicit dependence on assignment
-expl_depend(L1, X, Y, L) :- assign(L, X, Y, _), follows(L1, L).
-expl_depend(L1, X, Y, L) :- assign(L, X, _, Y), follows(L1, L).
+dpnd(L, X, Y, O) :- x_dpnd(L, X, Y, O).
+// Implicit dependence in branch.
+dpnd(L, X, Y, E) :- m_dpnd(L, X, Y, E).
+// Dependence carries over as long as no reassignment occurs.
+dpnd(L, X, Y, O) :- dpnd(L1, X, Y, O), follows(L, L1), !chgd(L, X).
 
-// Dependence carries over as long as it does not change
-expl_depend(L1, X, Y, L) :- expl_depend(L2, X, Y, L), after(L1, L2), !changed_btw(X, L2, L1).
+// Implicit dependence
+.decl m_dpnd(label: label, dependent: var, on: var, entry: label)
+m_dpnd(L, X, Y, E) :- branch(E, T), in_cond(Y, E), assign(L, X, _, _), btw(L, E, T1), follows(T1, T).
 
-// ========================================
-// IMPLICIT DEPENDENCE
-// ========================================
-// `dependent` is implicitly dependent on `on` due to condition at `cond`
-.decl impl_depend(label: label, dependent: var, on: var, cond: label)
-impl_depend(L, X, Y, E) :- changed_in_if(X, L, E), in_condition(Y, E).
-// Dependence carries over as long as it does not change
-impl_depend(L, X, Y, E) :- impl_depend(L1, X, Y, E), after(L, L1), !changed_btw(X, L1, L).
-
-.decl impl_dep_btw(dependent: var, on: var, from: label, to: label)
-impl_dep_btw(X, Y, F, T) :- impl_depend(L1, X, Y, _), tainted(L1, Y), between(L1, F, T).
-impl_dep_btw(X, Y, F, T) :- impl_depend(L1, X, Y, _), tainted(L1, Y), after(T, F).
-
+// Explicit dependence
+.decl x_dpnd(label: label, dependent: var, on: var, op: label)
+x_dpnd(O, X, Y, O) :- assign(O, X, Y, _).
+x_dpnd(O, X, Y, O) :- assign(O, X, _, Y).
 
 // ========================================
 // TAINTED VARIABLES
 // ========================================
-// `var` is tainted at label `l`
-.decl tainted(label: label, var: var)
-tainted(L, X) :- source(L1, X), follows(L, L1).
-tainted(L, X) :- tainted(L1, X), !changed_btw(X, L1, L), after(L, L1).
-tainted(L, X) :- expl_depend(L, X, Y, L1), tainted(L1, Y).
-tainted(L, X) :- impl_depend(L, X, Y, _), tainted(L, Y).
+// `var` is tainted at label `label` due to dependency on `dep` at `origin`.
+.decl tntd(label: label, var: var, dep: var, origin: label)
+tntd(O, X, X, O) :- source(O, X).
+// Taint carries over as long as the variable does not change
+tntd(L, X, Y, O) :- tntd(L1, X, Y, O), follows(L, L1), !chgd(L, X).
+// Tainted variables affect their dependents
+tntd(L, X, Z, O) :- tntd(L, Y, Z, _), dpnd(L, X, Y, O).
 
-.decl sanitised(label: label, var: var)
-sanitised(L, X) :- sink(L1, X), after(L, L1), !sourced_btw(X, L1, L).
-sanitised(L, X) :- expl_depend(L, Y, X, _).
+// `dependent` is tainted at the end of line between `from` and `to` due to dependency on `on`
+.decl tntd_line(dependent: var, on: var, from: label, to: label)
+tntd_line(X, Y, F, T) :- line(F, T), tntd(T, X, Y, _).
 
-// `var` requires sanitation between labels `from` to label `to`
-.decl req_san(var: var, from: label, to: label)
-req_san(X, F, T) :- source(F, X), !in_if(F), sink(T, X), after(T, F), !changed_btw(X, F, T), !sunk_btw(X, F, T1), follows(T, T1).
-req_san(X, F, T) :- tainted(F, Y), !sanitised(F, Y), expl_depend(_, X, Y, F), sink(T, X), after(T, F), !changed_btw(X, F, T), !impl_dep_btw(X, Y, F, T).
+// `dependent` is tainted at the end of branch between `from` and `to` due to dependency on `on`. Note that this is
+// only the case if all subbranches are also tainted.
+.decl tntd_brch(dependent: var, on: var, from: label, to: label)
+tntd_brch(X, Y, F, T) :- tntd_line(X, Y, F, T), !last(T).
+tntd_brch(X, Y, F, T) :- tntd_line(X, Y, F, T), last(T), first(F).
+tntd_brch(X, Y, F, T) :- branch(F, T), line(F1, T), join(F1, L1, L2), tntd_brch(X, Y, _, L1), tntd_brch(X, Y, _, L2).
 
-// `var` requires sanitation at label`at`
-.decl req_san_at(var: var, at: label)
-req_san_at(X, L) :- req_san(X, F, T), between(L, F, T).
+// `var` requires sinking
+.decl req_sink(var: var)
+req_sink(X) :- sink(_, X).
 
-// `var` being sunk at `label` is dependent on `num` variables that need to be also sanitised
-.decl dep_san(label: label, var: var, num: num)
-dep_san(L, X, C) :- req_san(X, _, L), C = count: {expl_depend(L, X, Y, L1), req_san(Y, F, T), between(L1, F, T), !impl_depend(L, X, Y, _)}.
 // ========================================
-// RESULT
+// SANITATION
 // ========================================
-.decl no_dep(var: var, label:label)
-no_dep(X, L) :- req_san(X, F, L), dep_san(L, X, C), C < 1, FC = count: {follows(_, F)}, FC > 1.
-no_dep(X, F) :- req_san(X, F1, L), dep_san(L, X, C), C < 1, FC = count: {follows(_, F1)}, FC < 2, follows(F, F1).
+/*
+ * Potential sanitation locations:
+ * ===============================
+ * - if not in a branch:
+ *   + on a join.
+ *   + after sourcing or assignement
+ * - if in a branch:
+ *   + on a join
+ *   + after sourcing or assignement
+ *   + before sourcing or assignement
+ *   + before branch split
+ *
+ *
+ * if not on a branch:
+ * ===================
+ * Sanitise only if NO subpath between potential sourcing and sink detaints the variable. If this is the case, sanitise
+ * at the source/assignment if possible (i.e. the variable was sourced/assigned to before branching and NOT
+ * reassigned in ANY sub-branch). Else sanitise at last join (this is guaranteed to be before a all sinks).
+ *
+ * if in branch:
+ * =============
+ * Sanitise only on join if ALL subpaths require sanitation and some "sister" branch does not require sanitation.
+ * Otherwise sanitation after the sourcing/assignment.
+ *
+ * The only case where in branch should be sanitised before assignment or before a branch split is when the assigned
+ * variable is dependent on some tainted variable that does not require sanitation based on "sister" branches.
+ *
+ *
+ *
+ * SANITATION RULES
+ * ================
+ * The only reason to sanitise a variable that is not sourced explicitly is that it depends on two sourced variables
+ * that will not be sunk and that no other variable dependends on.
+ *
+ * 1. Check if a variable requires sanitation (aka there is a sink at the end of the program and the variable is
+ *    still tainted at that point).
+ * 2. If the it dependent on two tainted variables, check if there is another variable that dependends on.
+ *    - if not, saninitse this variable as low as possible, all paths leading to that point are tainted.
+ *    - if yes, sanitise the two dependencies as high as possible, all paths from there on keep the taint.
+ */
 
-.decl dep_in_if(var: var, label:label)
-dep_in_if(X, T) :- tainted(F, Y), !sanitised(F, Y), impl_depend(L1, X, Y, F), sink(T, X), after(T, F), !changed_btw(X, L1, T).
-dep_in_if(X, T) :- source(F, X), in_if(F), sink(T, X), after(T, F), !changed_btw(X, F, T), !sunk_btw(X, F, T1), follows(T, T1).
+// branch requiring sanitation. This is the outermost tainted branch for variable `dependent` dependent on `on`.
+.decl sani_brch(dependent: var, on: var, from: label, to: label)
+sani_brch(X, Y, F, T) :- tntd_brch(X, Y, F, T), parent_b(F, T, PF, PT), !tntd_brch(X, Y, PF, PT).
+// Account for fact that if the tntd_brch is the whole program, then that needs to be output
+sani_brch(X, Y, F, T) :- tntd_brch(X, Y, F, T), first(F), last(T).
+
+/*
+ * Sanitise after entrance of branch or after source (whichever is last) if less then 2 dependencies that do not
+ * require sanitation (i.e. are not sunk).
+ *
+ * Sanitise after join or before sink (whichever is first) if 2 or more dependencies that do not require sanitation
+ * (i.e. are not sunk).
+ */
+// `var` needs sanitation at label `label
+.decl rule_1(var: var, label: label)
+// Sanitise after source if less than 2 dependencies and entire program (if source is not right before fork).
+rule_1(X, L) :- sink(_, Y), sani_brch(Y, X, F, T),
+                !at_least_2_dependencies(Y, F, T),
+                first(F), last(T),
+                source(S, X), follows(L, S), !more_than_1_follower(S).
+.decl rule_1_1(var: var, label: label)
+// Sanitise after source if less than 2 dependencies and entire program (if source is right before fork).
+rule_1_1(Y, L) :- sink(L, Y), sani_brch(Y, _, F, T),
+                  !at_least_2_dependencies(Y, F, T),
+                  first(F), last(T),
+                  source(S, X), more_than_1_follower(S).
+.decl rule_2(var: var, label: label)
+// Sanitise after entrance of branch if less than 2 dependencies and not entire program.
+rule_2(X, L) :- sink(_, Y), sani_brch(Y, X, F, T),
+                !m_dpnd(_, Y, X, F),
+                !at_least_2_dependencies(Y, F, T),
+                !first(F), !last(T),
+                follows(L, F),
+                tntd(T, Y, X, O), in_brch(O, F, T). // If operation is in the branch
+.decl rule_2_1(var: var, label: label)
+// Sanitise after entrance of branch if less than 2 dependencies and not entire program.
+rule_2_1(Y, L) :- sink(_, Y), sani_brch(Y, X, F, T),
+                  !m_dpnd(_, Y, X, F),
+                  !at_least_2_dependencies(Y, F, T),
+                  !first(F), !last(T),
+                  follows(L, F),
+                  tntd(T, Y, X, O), !in_brch(O, F, T). // If operation is NOT in the branch
+.decl rule_3(var: var, label: label)
+// Sanitise after assignment if less than 2 dependencies, not entire program and the dependency is implicit.
+rule_3(Y, L) :- sink(_, Y), sani_brch(Y, X, F, T),
+                m_dpnd(L1, Y, X, F),
+                !at_least_2_dependencies(Y, F, T),
+                !first(F), !last(T),
+                follows(L, L1).
+
+.decl rule_4(var: var, label: label)
+// Sanitise before sink if 2 or more dependencies and entire program.
+rule_4(X, S) :- sink(S, X), sani_brch(X, Y, F, T),
+                at_least_2_dependencies(X, F, T),
+                first(F), last(T).
+.decl rule_5(var: var, label: label)
+// Sanitise after join if 2 or more dependencies and not entire program.
+rule_5(X, L) :- sink(_, X), sani_brch(X, Y, F, T),
+                at_least_2_dependencies(X, F, T),
+                !first(F), !last(T),
+                follows(L, T).
 
 
-.decl have_dep(var: var, label:label)
-have_dep(X, O) :- tainted(O, X), !sanitised(O, X), expl_depend(T, Y, X, O), req_san(Y, _, T), !req_san_at(X, O), X != Y, dep_san(T, Y, C), C > 0.
+// === === === === === === === === === === ===
+// Backup, fails test 4 from first 7.
+// === === === === === === === === === === ===
+// .decl rule_1(var: var, label: label)
+// // Sanitise after source if less than 2 dependencies and entire program.
+// rule_1(X, L) :- sink(_, Y), sani_brch(Y, X, F, T),
+//                 !at_least_2_dependencies(Y, F, T),
+//                 first(F), last(T),
+//                 source(S, X), follows(L, S).
+// .decl rule_2(var: var, label: label)
+// // Sanitise after entrance of branch if less than 2 dependencies and not entire program.
+// rule_2(X, L) :- sink(_, Y), sani_brch(Y, X, F, T),
+//                 !m_dpnd(_, Y, X, F),
+//                 !at_least_2_dependencies(Y, F, T),
+//                 !first(F), !last(T),
+//                 follows(L, F).
+// .decl rule_3(var: var, label: label)
+// // Sanitise after assignment if less than 2 dependencies, not entire program and the dependency is implicit.
+// rule_3(Y, L) :- sink(_, Y), sani_brch(Y, X, F, T),
+//                 m_dpnd(L1, Y, X, F),
+//                 !at_least_2_dependencies(Y, F, T),
+//                 !first(F), !last(T),
+//                 follows(L, L1).
 
-.decl res(var: var, label: label)
-res(X, L) :- no_dep(X, L).
-res(X, L) :- dep_in_if(X, L).
-res(X, L) :- have_dep(X, L).
+// .decl rule_4(var: var, label: label)
+// // Sanitise before sink if 2 or more dependencies and entire program.
+// rule_4(X, S) :- sink(S, X), sani_brch(X, Y, F, T),
+//                 at_least_2_dependencies(X, F, T),
+//                 first(F), last(T).
+// .decl rule_5(var: var, label: label)
+// // Sanitise after join if 2 or more dependencies and not entire program.
+// rule_5(X, L) :- sink(_, X), sani_brch(X, Y, F, T),
+//                 at_least_2_dependencies(X, F, T),
+//                 !first(F), !last(T),
+//                 follows(L, T).
+
+.decl at_least_2_dependencies(var: var, from: label, to: label)
+at_least_2_dependencies(X, F, T) :- sani_brch(X, Z, F, T), !req_sink(Z),
+                                    sani_brch(X, W, F, T), !req_sink(W), W != Z.
+
+.decl more_than_1_follower(label: label)
+more_than_1_follower(L) :- follows(L1, L), follows(L2, L), L1 != L2.
+
+// `var` needs sanitation at label `label
+.decl sanitise(var: var, label: label)
+sanitise(X, L) :- rule_1(X, L).
+sanitise(X, L) :- rule_1_1(X, L).
+sanitise(X, L) :- rule_2(X, L).
+sanitise(X, L) :- rule_2_1(X, L).
+sanitise(X, L) :- rule_3(X, L).
+sanitise(X, L) :- rule_4(X, L).
+sanitise(X, L) :- rule_5(X, L).
+
+.output sanitise
+.output req_sink
+.output branch
+.output parent_b
+.output line
+.output tntd_brch
+.output line
+.output tntd_line
+.output sani_brch
+.output dpnd
+.output tntd
+.output rule_1
+.output rule_1_1
+.output rule_2
+.output rule_2_1
+.output rule_3
+.output rule_4
+.output rule_5
 
 
-.output res
 
-// .decl test(label: label, var: var, dep: var, entry:label)
-// test(L, X, Y, L1) :- impl_depend(L, X, Y, L1), tainted(L1, Y).
+// .decl test(var: var, label: label, num: num)
+// test(X, S, C) :- sink(S, X), sani_brch(X, Y, F, T),
+//               C = count: {sani_brch(X, Z, F, T), !req_sink(Z)}, C > -10.
 
 // .output test

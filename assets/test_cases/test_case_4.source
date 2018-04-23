@@ -1,4 +1,12 @@
-x := source();
-sink(x);
-x := op(x, 5);
-sink(x);
+y := source();
+if(x > 0) {
+    z := y + 1;
+}
+else {
+    z := y - 4;
+}
+sink(z);
+
+// Checks that if a variable gets tainted in both branches, the parent branch is marked as tainted. In this case, the
+// parent branch is the entire program. Hence here we require a taint either before `sink` or after the source of `y`.
+// In our analysis, we are aiming at sanitising `y` after the call to `source` and not before the call to `sink`.

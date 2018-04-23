@@ -1,6 +1,0 @@
-x := source()
-if(z > 0):
-    y := x + 5;
-else:
-    y := z;
-sink(y);

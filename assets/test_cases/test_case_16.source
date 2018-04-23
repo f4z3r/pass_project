@@ -1,4 +1,0 @@
-y := op(x, 5);
-x := source();
-sink(y);
-sink(x);

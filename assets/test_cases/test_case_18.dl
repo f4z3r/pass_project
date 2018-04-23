@@ -1,7 +1,0 @@
-source(1, x)
-follows(2, 1) if(2, 3, 1, 0)
-follows(3, 2) assign(3, w, 1, 0)
-follows(4, 3) if(4, 5, x, 0)
-follows(5, 4) assign(5, z, 1, 0)
-follows(6, 5) follows(6, 4) follows(6, 2) join(6, 5, 4) join(6, 5, 2) sink(6, w)
-follows(7, 6) sink(7, z)

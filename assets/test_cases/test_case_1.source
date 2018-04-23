@@ -1,4 +1,9 @@
 x := source();
 y := source();
-sink(x);
-sink(y);
+z := x + y;
+sink(z);
+
+// Checks if when dependent on two tainted variables, only the dependent gets sanitised if none of the dependencies are
+// sunk.
+//
+// Only `z` should be sanitised here.

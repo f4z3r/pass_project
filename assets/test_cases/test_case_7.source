@@ -1,4 +1,16 @@
 x := source();
-y := source();
-z := op(x, y);
-sink(z);        // Only sanitise z
+if(y > 0) {
+    x := 5;
+}
+else {
+    if(z > 0) {
+        x := y + 2;
+    }
+    else {
+        x := 4;
+    }
+}
+sink(x);
+
+// Checks that if reassigned in all branches to sink, the variable is no longer tainted at sink.
+// This is the case here for `x` hence nothing needs sanitation.

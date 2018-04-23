@@ -41,69 +41,21 @@ class TestDatalog(unittest.TestCase):
         outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_7.dl")).run()
         self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_7.csv"))
 
-    def test_case_8(self):
-        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_8.dl")).run()
-        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_8.csv"))
+    def test_verify_case_1(self):
+        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "verify_case_1.dl")).run()
+        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "verify_case_1.csv"))
 
-    def test_case_9(self):
-        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_9.dl")).run()
-        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_9.csv"))
+    def test_verify_case_2(self):
+        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "verify_case_2.dl")).run()
+        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "verify_case_2.csv"))
 
-    def test_case_10(self):
-        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_10.dl")).run()
-        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_10.csv"))
+    def test_verify_case_3(self):
+        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "verify_case_3.dl")).run()
+        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "verify_case_3.csv"))
 
-    def test_case_11(self):
-        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_11.dl")).run()
-        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_11.csv"))
-
-    def test_case_12(self):
-        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_12.dl")).run()
-        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_12.csv"))
-
-    def test_case_13(self):
-        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_13.dl")).run()
-        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_13.csv"))
-
-    def test_case_14(self):
-        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_14.dl")).run()
-        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_14.csv"))
-
-    def test_case_15(self):
-        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_15.dl")).run()
-        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_15.csv"))
-
-    def test_case_16(self):
-        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_16.dl")).run()
-        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_16.csv"))
-
-    def test_case_17(self):
-        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_17.dl")).run()
-        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_17.csv"))
-
-    def test_case_18(self):
-        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_18.dl")).run()
-        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_18.csv"))
-
-    def test_case_19(self):
-        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_19.dl")).run()
-        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_19.csv"))
-
-    def test_case_20(self):
-        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_20.dl")).run()
-        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_20.csv"))
-
-    def test_case_21(self):
-        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_21.dl")).run()
-        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_21.csv"))
-
-    def test_case_22(self):
-        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_22.dl")).run()
-        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_22.csv"))
-
-    def test_case_23(self):
-        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "test_case_23.dl")).run()
-        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "test_case_23.csv"))
+    def test_verify_case_4(self):
+        outputfile = analysis.Analysis(os.path.join(properties["TEST_DIR"], "verify_case_4.dl")).run()
+        self._compare_files(outputfile, os.path.join(properties["TEST_DIR"], "verify_case_4.csv"))
 
 
 

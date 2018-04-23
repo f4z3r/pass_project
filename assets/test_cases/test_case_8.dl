@@ -1,3 +1,0 @@
-source(1, x)
-follows(2, 1) assign(2, z, x, 0)
-follows(3, 2) sink(3, z)

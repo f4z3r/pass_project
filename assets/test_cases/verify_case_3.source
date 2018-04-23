@@ -1,0 +1,12 @@
+x := source();
+if(z > 0) {
+    y := z;
+}
+else {
+    y := x + z;
+}
+sink(y);
+sink(z);
+
+
+//expected output: (6,"x") or (7,"y").

@@ -57,7 +57,7 @@ class Analysis:
             if process.returncode == 0:
                 self.output_file = os.path.join(properties["OUTPUT_DIR"],
                                                 "{}.csv".format(datetime.now()))
-                os.rename(os.path.join(properties["OUTPUT_DIR"], "res.csv"), self.output_file)
+                os.rename(os.path.join(properties["OUTPUT_DIR"], "sanitise.csv"), self.output_file)
             else:
                 logger.error("Something unexpected happened during analysis, please try again.")
                 return

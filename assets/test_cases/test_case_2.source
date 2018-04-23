@@ -1,6 +1,10 @@
 x := source();
-x := 5;
-sink(x);
-x := source();
-x := op(x, 5);
-sink(x);
+y := x + 5;
+z := x + 0;
+sink(y);
+sink(z);
+
+// Checks that if a variable has two dependent variables that require sanitation, which are not dependent on anything
+// else, then only the initial variable should be sanitised.
+//
+// In this case only `x` should be sanitised.
