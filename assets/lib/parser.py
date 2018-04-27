@@ -41,14 +41,14 @@ class Parser:
         self.source = re.compile(r"source\s*\(\s*\"?[lL]?(?P<label>\w+)\"?\s*,\s*\"?"
                                  r"(?P<var>\w+)\"?\s*\)")
         self.sink = re.compile(r"sink\s*\(\s*\"?[lL]?(?P<label>\w+)\"?\s*,"
-                               r"s*\"?(?P<var>\w+)\"?\s*\)")
+                               r"\s*\"?(?P<var>\w+)\"?\s*\)")
         self.follows = re.compile(r"follows\s*\(\s*\"?[lL]?(?P<after>\w+)\"?\s*,"
                                   r"\s*\"?[lL]?(?P<before>\w+)\"?\s*\)")
         self.if_stat = re.compile(r"if\s*\(\s*\"?[lL]?(?P<label>\w+)\"?\s*,\s*\"?[lL]?(?P<jump>\w+)"
                                   r"\"?\s*,\s*-?\s*\"?-?(?P<variable1>\w+)\"?,"
                                   r"\s*\"?-?(?P<variable2>\w+)\"?\s*\)")
         self.join = re.compile(r"join\s*\(\s*\"?[lL]?(?P<label>\w+)\"?\s*,\s*\"?[lL]?(?P<join1>\w+)"
-                               r"\"?\s*,\s*\"?[lL]??P<join2>\w+)\"?\s*\)")
+                               r"\"?\s*,\s*\"?[lL]?(?P<join2>\w+)\"?\s*\)")
         self.assign = re.compile(r"assign\s*\(\s*\"?[lL]?(?P<label>\w+)\"?\s*,"
                                  r"\s*\"?(?P<receiver>\w+)\"?\s*,\s*\"?(?P<item1>\w+)\"?\s*,"
                                  r"\s*\"?(?P<item2>\w+)\"?\s*\)")
