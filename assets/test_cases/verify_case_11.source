@@ -1,0 +1,21 @@
+x := source();
+if(y > 0) {
+    if(z > 0) {
+        u := x;
+    }
+    else {
+        u := 0;
+    }
+}
+else {
+    if(z > 0) {
+        u := y;
+    }
+    else {
+        u := z;
+    }
+}
+sink(u);
+
+
+//expected output: ("l5","u") or ("l4", "x").

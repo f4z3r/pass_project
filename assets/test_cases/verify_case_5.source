@@ -1,0 +1,14 @@
+x := source();
+if(z > 0) {
+    w := x;
+    y := x;
+}
+else {
+    w := 0;
+    y := 0;
+}
+sink(w);
+sink(y);
+
+//expected output: ("l3","x").
+

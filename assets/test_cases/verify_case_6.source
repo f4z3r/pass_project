@@ -1,0 +1,20 @@
+x := source();
+y := source();
+z := source();
+s := source();
+if(t > 0) {
+    u := x + y;
+    v := 0;
+    w := 0;
+}
+else {
+    u := 0;
+    v := y + z;
+    w := z + s;
+}
+sink(u);
+sink(v);
+sink(w);
+
+//expected output: ("l7","u"), ("l14","v"), ("l14","w").
+

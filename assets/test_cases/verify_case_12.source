@@ -1,0 +1,20 @@
+x := source();
+if(y > 0) {
+    if(z > 0) {
+        u := y + z;
+    }
+    else {
+        u := 0;
+    }
+}
+else {
+    if(z > 0) {
+        u := y;
+    }
+    else {
+        u := z;
+    }
+}
+sink(u);
+
+//expected output: No sanitization required.
