@@ -38,18 +38,20 @@ class Parser:
         self._assign_file = None
 
         self.token = re.compile(r"\s*(?P<token>\w+\s*\([\s,\w<>=\"]+\))\s*")
-        self.source = re.compile(r"source\s*\(\s*\"?(?P<label>\w+)\"?\s*,\s*\"?"
+        self.source = re.compile(r"source\s*\(\s*\"?[lL]?(?P<label>\w+)\"?\s*,\s*\"?"
                                  r"(?P<var>\w+)\"?\s*\)")
-        self.sink = re.compile(r"sink\s*\(\s*\"?(?P<label>\w+)\"?\s*,\s*\"?(?P<var>\w+)\"?\s*\)")
-        self.follows = re.compile(r"follows\s*\(\s*\"?(?P<after>\w+)\"?\s*,"
-                                  r"\s*\"?(?P<before>\w+)\"?\s*\)")
-        self.if_stat = re.compile(r"if\s*\(\s*\"?(?P<label>\w+)\"?\s*,\s*\"?(?P<jump>\w+)\"?\s*,"
-                                  r"\s*-?\s*\"?-?(?P<variable1>\w+)\"?,\s*\"?-?(?P<variable2>\w+)"
-                                  r"\"?\s*\)")
-        self.join = re.compile(r"join\s*\(\s*\"?(?P<label>\w+)\"?\s*,\s*\"?(?P<join1>\w+)\"?\s*,"
-                               r"\s*\"?(?P<join2>\w+)\"?\s*\)")
-        self.assign = re.compile(r"assign\s*\(\s*\"?(?P<label>\w+)\"?\s*,\s*\"?(?P<receiver>\w+)"
-                                 r"\"?\s*,\s*\"?(?P<item1>\w+)\"?\s*,\s*\"?(?P<item2>\w+)\"?\s*\)")
+        self.sink = re.compile(r"sink\s*\(\s*\"?[lL]?(?P<label>\w+)\"?\s*,"
+                               r"s*\"?(?P<var>\w+)\"?\s*\)")
+        self.follows = re.compile(r"follows\s*\(\s*\"?[lL]?(?P<after>\w+)\"?\s*,"
+                                  r"\s*\"?[lL]?(?P<before>\w+)\"?\s*\)")
+        self.if_stat = re.compile(r"if\s*\(\s*\"?[lL]?(?P<label>\w+)\"?\s*,\s*\"?[lL]?(?P<jump>\w+)"
+                                  r"\"?\s*,\s*-?\s*\"?-?(?P<variable1>\w+)\"?,"
+                                  r"\s*\"?-?(?P<variable2>\w+)\"?\s*\)")
+        self.join = re.compile(r"join\s*\(\s*\"?[lL]?(?P<label>\w+)\"?\s*,\s*\"?[lL]?(?P<join1>\w+)"
+                               r"\"?\s*,\s*\"?[lL]??P<join2>\w+)\"?\s*\)")
+        self.assign = re.compile(r"assign\s*\(\s*\"?[lL]?(?P<label>\w+)\"?\s*,"
+                                 r"\s*\"?(?P<receiver>\w+)\"?\s*,\s*\"?(?P<item1>\w+)\"?\s*,"
+                                 r"\s*\"?(?P<item2>\w+)\"?\s*\)")
 
 
     def parse(self):
@@ -88,9 +90,9 @@ class Parser:
                 match = re.fullmatch(self.if_stat, token)
                 logger.debug("if_stat: {}".format(token))
                 self._if_stat_file.write("{}\t{}\t{}\t{}\n".format(match.group("label"),
-                                                               match.group("jump"),
-                                                               match.group("variable1"),
-                                                               match.group("variable2")))
+                                                                   match.group("jump"),
+                                                                   match.group("variable1"),
+                                                                   match.group("variable2")))
             elif re.fullmatch(self.join, token) is not None:
                 match = re.fullmatch(self.join, token)
                 logger.debug("join: {}".format(token))
