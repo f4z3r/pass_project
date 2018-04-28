@@ -186,34 +186,77 @@ sani_brch(X, Y, F, T) :- tntd_brch(X, Y, F, T), first(F), last(T).
 rule_1(X, T) :- sani_brch(X, Y, F, T), sink(_, X),
                 !common_dep(X, T),
                 !last(T), !first(F),
-                !has_parent_sb(X, F, T).
+                !has_parent_sb(X, F, T),
+                !r2_bef(X, T).
 .decl rule_1_1(var: var, label: label)
 rule_1_1(X, L) :- sani_brch(X, Y, F, T), sink(L, X),
                   !common_dep(X, T),
-                  last(T), first(F).
+                  last(T), first(F),
+                  !r2_bef(X, L).
 
 .decl rule_2(var: var, label: label)
 rule_2(Y, L) :- sani_brch(X, Y, F, T), sink(_, X),
                 common_dep(X, T),
                 !last(T), !first(F),
                 L = min L1: {follows(L1, F)},
-                !has_parent_sb(Y, F, T).
+                !has_parent_sb(Y, F, T),
+                !self_dep(X, T),
+                !r2_1_bef(Y, L).
 .decl rule_2_1(var: var, label: label)
 rule_2_1(Y, L) :- sani_brch(X, Y, F, T), sink(_, X),
                   common_dep(X, T),
                   last(T), first(F),
                   source(S, Y),
-                  L = min L1: {follows(L1, S)}.
+                  L = min L1: {follows(L1, S)},
+                  !self_dep(X, T).
+
+.decl rule_3(var: var, label: label)
+rule_3(X, T) :- sani_brch(X, Y, F, T), sink(_, X),
+                common_dep(X, T),
+                !last(T), !first(F),
+                L = min L1: {follows(L1, F)},
+                !has_parent_sb(Y, F, T),
+                self_dep(X, T).
+.decl rule_3_1(var: var, label: label)
+rule_3_1(X, L) :- sani_brch(X, Y, F, T), sink(_, X),
+                  common_dep(X, T),
+                  last(T), first(F),
+                  source(S, Y),
+                  L = min L1: {follows(L1, S)},
+                  self_dep(X, T).
 
 
 
+// `var` has a common dependency `z ` with another variable `y`, and both `var` and this other variable are sunk, but
+// `z` is not an implicit dependence for `y`.
 .decl common_dep(var: var, label: label)
-common_dep(X, T) :- sani_brch(X, Y, F, T), tntd(T, Z, Y, _),
+common_dep(X, T) :- sani_brch(X, Y, F, T), tntd(T, Z, Y, _), !m_dpnd(T, Z, Y, _),
                     sink(_, X), sink(_, Z),
                     X != Z.
 
+// `var` has two distint dependencies that are not sunk.
+.decl self_dep(var: var, label: label)
+self_dep(X, T) :- sani_brch(X, Y, F, T), sani_brch(X, Z, F, T),
+                  !sink(_, Y), !sink(_, Z),
+                  X != Y, X != Z, Z != Y.
+
+// `var` in branch `from` to `to` has a parent branch that requires a sinking of a dependent variable.
 .decl has_parent_sb(var: var, from: label, to: label)
 has_parent_sb(X, F, T) :- sani_brch(X, _, F, T), sani_brch(X, Y, F1, T1), path(F1, F), path(T, T1), sink(_, Y).
+
+//
+.decl r2_bef(var: var, label: label)
+r2_bef(X, L) :- rule_2(X, L2), follows(L2, L1), path(L1, L).
+r2_bef(X, L) :- rule_2_1(X, L2), follows(L2, L1), path(L1, L).
+
+//
+.decl r2_1_bef(var: var, label: label)
+r2_1_bef(X, L) :- rule_2_1(X, L2), follows(L2, L1), path(L1, L).
+
+//
+.decl r3_bef(var: var, label: label)
+r3_bef(X, L) :- rule_3(X, L2), follows(L2, L1), path(L1, L).
+r3_bef(X, L) :- rule_3_1(X, L2), follows(L2, L1), path(L1, L).
 
 
 // `var` needs sanitation at label `label
@@ -222,6 +265,8 @@ sanitise(X, L) :- rule_1(X, L).
 sanitise(X, L) :- rule_1_1(X, L).
 sanitise(X, L) :- rule_2(X, L).
 sanitise(X, L) :- rule_2_1(X, L).
+sanitise(X, L) :- rule_3(X, L).
+sanitise(X, L) :- rule_3_1(X, L).
 
 
 
@@ -232,6 +277,8 @@ sanitise(X, L) :- rule_2_1(X, L).
 .output rule_1_1
 .output rule_2
 .output rule_2_1
+.output rule_3
+.output rule_3_1
 .output req_sink
 .output branch
 .output parent_b
