@@ -1,0 +1,10 @@
+x := source();
+if(x > 0) {
+    z := x;
+}
+else {
+    z := 1;
+}
+sink(z);
+
+// Here, one can either sanitise `x` after sourcing, or sanitise `z` before sinking.
