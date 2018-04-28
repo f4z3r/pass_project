@@ -1,0 +1,24 @@
+x := source();
+if (y > 0) {
+    if(z > 0) {
+        x := y + z;
+    }
+    else {
+        u := 0;
+    }
+}
+else {
+    if(z > 0) {
+        u := y;
+    }
+    else {
+        u := z;
+    }
+}
+sink(x);
+
+
+
+
+
+//expected output: ("l7","x"), ("l17","x").

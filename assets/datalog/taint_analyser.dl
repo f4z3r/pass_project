@@ -163,6 +163,8 @@ tntd_brch(X, Y, F, T) :- tntd_line(X, Y, F, T), !last(T).
 tntd_brch(X, Y, F, T) :- tntd_line(X, Y, F, T), last(T), first(F).
 tntd_brch(X, Y, F, T) :- branch(F, T), line(F1, T), join(F1, L1, L2), tntd_brch(X, _, _, L1), tntd_brch(X, Y, _, L2).
 tntd_brch(X, Y, F, T) :- branch(F, T), line(F1, T), join(F1, L1, L2), tntd_brch(X, Y, _, L1), tntd_brch(X, _, _, L2).
+tntd_brch(X, Y, F, T) :- branch(F, T), parent_b(F1, L1, F, T), parent_b(F2, L2, F, T), join(_, L1, L2), tntd_brch(X, Y, F1, L1), tntd_brch(X, _, F2, L2).
+tntd_brch(X, Y, F, T) :- branch(F, T), parent_b(F1, L1, F, T), parent_b(F2, L2, F, T), join(_, L1, L2), tntd_brch(X, _, F1, L1), tntd_brch(X, Y, F2, L2).
 
 // `var` requires sinking
 .decl req_sink(var: var)

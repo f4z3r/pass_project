@@ -1,0 +1,12 @@
+x := source();
+y := x + z;
+if(z + 2 > 0) {
+    y := 5;
+}
+else {
+    y := 2;
+}
+sink(y);
+
+
+//expected output: No sanitization required.

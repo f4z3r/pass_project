@@ -1,0 +1,16 @@
+x := source();
+y := source();
+z := source();
+if(z > 0) {
+    x := v;
+}
+else {
+    y := v;
+}
+sink(x);
+sink(y);
+sink(v);
+
+
+
+//expected output: ("l10","x"),("l10","y").

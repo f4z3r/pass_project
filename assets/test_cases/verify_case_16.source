@@ -1,0 +1,23 @@
+x := source();
+y := source();
+z := source();
+if(u > 0) {
+    if(v > 0) {
+        w := y + z;
+    }
+    else {
+        w := 0;
+    }
+}
+else {
+    if(z > 0) {
+        w := x;
+    }
+    else {
+        w := 1;
+    }
+}
+sink(w);
+
+
+//expected output: ("l7","w"), ("l15","w").
