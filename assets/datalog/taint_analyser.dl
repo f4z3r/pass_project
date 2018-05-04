@@ -270,6 +270,9 @@ sanitise(X, L) :- rule_3_1(X, L).
 
 
 
+// clean the output possibilities and check for verifier case 9 to find better sanitaiton. This is caused by the
+// unecessary sanitation of `z` for all branches in the source program.
+
 .output sanitise
 .output common_dep
 .output has_parent_sb
