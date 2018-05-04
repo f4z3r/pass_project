@@ -244,16 +244,16 @@ self_dep(X, T) :- sani_brch(X, Y, F, T), sani_brch(X, Z, F, T),
 .decl has_parent_sb(var: var, from: label, to: label)
 has_parent_sb(X, F, T) :- sani_brch(X, _, F, T), sani_brch(X, Y, F1, T1), path(F1, F), path(T, T1), sink(_, Y).
 
-//
+// rule 2 was applied for varialbe `var` before label `label`
 .decl r2_bef(var: var, label: label)
 r2_bef(X, L) :- rule_2(X, L2), follows(L2, L1), path(L1, L).
 r2_bef(X, L) :- rule_2_1(X, L2), follows(L2, L1), path(L1, L).
 
-//
+// rule 2.1 was applied for varialbe `var` before label `label`
 .decl r2_1_bef(var: var, label: label)
 r2_1_bef(X, L) :- rule_2_1(X, L2), follows(L2, L1), path(L1, L).
 
-//
+// rule 3 was applied for varialbe `var` before label `label`
 .decl r3_bef(var: var, label: label)
 r3_bef(X, L) :- rule_3(X, L2), follows(L2, L1), path(L1, L).
 r3_bef(X, L) :- rule_3_1(X, L2), follows(L2, L1), path(L1, L).
