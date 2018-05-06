@@ -117,7 +117,3 @@ endif
 
 @enduml
 ```
-
-## TODO
-- clean the output of the program to not output all debug information from the taint-analyser.
-- check verifier case 9 for test fail (oversanitation in first branch of the source program).
