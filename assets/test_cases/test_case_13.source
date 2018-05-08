@@ -1,0 +1,10 @@
+x := source();
+y := source();
+if(x > y) {
+    z := 1;
+}
+else {
+    z := 0;
+}
+sink(x);
+sink(z);

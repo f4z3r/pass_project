@@ -1,0 +1,15 @@
+x := source();
+if(1 > 0) {
+    w := 1;
+    if(x > 0) {
+        z := 1;
+    }
+    else {
+        u := 0;
+    }
+}
+else {
+    u := 1;
+}
+sink(w);
+sink(z);
