@@ -74,10 +74,10 @@ branch(F, T) :- line(F, T1), branch(F1, T2), line(F2, T),
 branch(F, T) :- branch(F1, T2), line(F2, T),
                 follows(F1, F), if(F, _, _, _),
                 follows(F2, T2), join(F2, _, _).
-branch(F, T) :- line(F, T1), branch(F1, T),
+branch(F, T) :- line(F, T1), branch(F1, T2),
                 follows(F1, T1),
-                follows(L1, T), join(L1, _, _),
-                follows(L2, L1), join(L2, _, _).
+                follows(T, T2), join(T, _, _),
+                follows(L2, T), join(L2, _, _).
 branch(F, T) :- branch(F1, T1),
                 follows(F1, F), if(F, _, _, _),
                 follows(T, T1), join(T, _, _),
@@ -270,7 +270,24 @@ sanitise(X, L) :- rule_3(X, L).
 sanitise(X, L) :- rule_3_1(X, L).
 
 
-
-
 // --> Output <--
 .output sanitise
+
+// --> Debugging <--
+// .output rule_1
+// .output rule_1_1
+// .output rule_2
+// .output rule_2_1
+// .output rule_3
+// .output rule_3_1
+// .output sani_brch
+// .output tntd_brch
+// .output tntd
+// .output parent_b
+// .output common_dep
+// .output self_dep
+// .output has_parent_sb
+// .output x_dpnd
+// .output m_dpnd
+// .output branch
+// .output line
