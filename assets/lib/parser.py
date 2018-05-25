@@ -45,7 +45,7 @@ class Parser:
         self.follows = re.compile(r"follows\s*\(\s*\"?[lL]?(?P<after>\w+)\"?\s*,"
                                   r"\s*\"?[lL]?(?P<before>\w+)\"?\s*\)")
         self.if_stat = re.compile(r"if\s*\(\s*\"?[lL]?(?P<label>\w+)\"?\s*,\s*\"?[lL]?(?P<jump>\w+)"
-                                  r"\"?\s*,\s*-?\s*\"?-?(?P<variable1>\w+)\"?,"
+                                  r"\"?\s*,\s*-?\s*\"?-?(?P<variable1>\w+)\"?\s*,"
                                   r"\s*\"?-?(?P<variable2>\w+)\"?\s*\)")
         self.join = re.compile(r"join\s*\(\s*\"?[lL]?(?P<label>\w+)\"?\s*,\s*\"?[lL]?(?P<join1>\w+)"
                                r"\"?\s*,\s*\"?[lL]?(?P<join2>\w+)\"?\s*\)")
