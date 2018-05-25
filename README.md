@@ -2,6 +2,17 @@
 Program Analysis for System Security and Reliability project
 
 ## Usage
+
+### TLDR;
+> Note that `souffle` needs to be installed and should be in `PATH` or the program will not run.
+
+Please run
+```
+python3 taint_analysis.py run <source file>
+```
+to run the program. This will output the solution to the console. [See below](#detailed) to output the solution to a file. The input source file should be a `.dl` file containing only the predicates of the input program. If this is not the case, the solution might not be affected.
+
+### Detailed
 `taint_analysis.py` controls the execution. Its usage is the following:
 ```
 usage: taint_analysis.py [-h] [-v | -q] [-d] {compile,run,test,clear} ...
@@ -44,6 +55,8 @@ If the `-d` option is given, the results are printed to the given filename inste
 
 ### Note
 In order to run the interpreter or to compile the Datalog program, [`souffle`](https://github.com/oracle/souffle/wiki) should be in `PATH`. If a binary is already present, this is not necessary.
+
+In order to run the `compile` command, ensure `souffle`'s flags are properly set or it will not be able to compile the datalog program. This will not be reported to the command line if the compilation fails this way (but one can check if a binary was build in `assets/bin/`).
 
 ## Implementation
 The functionalities of the application work as follows:
